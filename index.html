@@ -1,4 +1,3 @@
-html
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Risk of Rain 2: Hotseat Card Game</title>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f1eee6;--fg:#1d1d1d;--pn:#fff;--bd:#cfc9bb;--mu:#666}
@@ -17,11 +16,6 @@ button{cursor:pointer}button:hover{border-color:var(--fg)}
 .card{width:180px;min-height:140px;border:3px solid var(--c);border-radius:8px;background:var(--pn);display:flex;flex-direction:column;position:relative;overflow:hidden}
 .card.click{cursor:pointer}.card.click:hover{transform:translateY(-4px);box-shadow:0 6px 14px #0005}
 .card.sel{outline:4px solid #2e8b3d;outline-offset:2px}
-.card.best{box-shadow:0 0 0 3px #f59f00,0 0 18px #f59f0099}
-.card.best::after{content:"★ BEST";position:absolute;bottom:4px;right:5px;background:#f59f00;color:#111;font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;letter-spacing:.5px;pointer-events:none}
-.card.drop-best{box-shadow:0 0 0 3px #e03131,0 0 16px #e0313188}
-.card.drop-best::after{content:"✕ DISCARD";position:absolute;bottom:4px;right:5px;background:#e03131;color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;letter-spacing:.5px;pointer-events:none}
-.best-act{box-shadow:0 0 0 2px #f59f00,0 0 10px #f59f0088;border-radius:6px;padding:2px 6px}
 .card h3{margin:0;font-size:14px;background:var(--c);color:#fff;padding:5px 24px 5px 6px}
 .card i{font-size:9px;letter-spacing:1px;color:var(--c);text-align:center;font-weight:700;margin-top:3px;font-style:normal}
 .card p{margin:4px 7px 7px;font-size:12.5px;line-height:1.3;flex:1}
@@ -31,7 +25,7 @@ button{cursor:pointer}button:hover{border-color:var(--fg)}
 .modal{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:9}
 .box{background:var(--pn);padding:16px;border-radius:10px;width:min(440px,92vw);display:flex;flex-direction:column;gap:8px}
 .box textarea{min-height:110px}
-</style><script src="https://jsdelivr.net"></script></head><body><div id="app"></div>
+</style><script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script></head><body><div id="app"></div>
 <script>
 const S=`Commando|Double Tap: [A] +1.5 for each Item you hold that has an [A] bonus.
 Huntress|Marked Prey: Last round's winner takes [E] −10%.
@@ -125,7 +119,7 @@ Genesis Loop|Y|[C] ×1.3. Opp's × of 1.3 or less is ignored.
 Nkuhana's Opinion|Y|[B] +50% if you lost last round.
 Little Disciple|Y|[A] +5. [C] ×1.05 per Y/R you hold.
 Empathy Cores|Y|[A] +2 per player in the game.
-Shatterspleen|Y|[E] Opp −10%. Your — can't be negated.
+Shatterspleen|Y|[E] Opp −10%. Your − can't be negated.
 Shaped Glass|L|[C] ×2. [F] Opp +4 (you feed them).
 Brittle Crown|L|[C] ×2 if you hold 2 or fewer Items.
 Transcendence|L|[D] Score^1.15. Inventory limit becomes 2.
@@ -155,7 +149,6 @@ Vow of Radiance|H|One-shot. [C] ×3. [E] All Opp −10%. Takes 2 slots.`;
 const Q=`Recycler|3|Use: [A] +7.
 Jade Elephant|4|Use: [B] +45%.
 Gorag's Opus|4|Use: [C] ×1.4.
-Use code with caution.
 Fuel Array|2|Use: [A] +3. [B] +10%.
 Blast Shower|2|Use: Negate every − aimed at you this round.
 Preon Accumulator|4|Use: [E] All Opp −15%.
@@ -168,27 +161,26 @@ Super Massive Leech|3|Use: [E] Opp −8. [F] You +4.
 Milky Chrysalis|3|Use: [A] +2. [C] ×1.25.
 The Back-up|2|Use: [A] +1.5 per Item you hold.
 Foreign Fruit|2|Use: [B] +20%.`;
+
 const col={W:"#6b6b6b",G:"#2e8b3d",R:"#c62828",Y:"#c9a100",L:"#1f6fd1",V:"#7b2fb5",S:"#b8860b",H:"#e64980",Q:"#e8761a"};
 const nm={S:"SURVIVOR",W:"COMMON",G:"UNCOMMON",R:"LEGENDARY",Y:"BOSS",L:"LUNAR",V:"VOID",H:"HALLOWED",Q:"EQUIPMENT"};
 let cards=[],G=null,ph="menu",back="menu",ui={n:2,target:3,limit:4,names:["Player 1","Player 2","Player 3","Player 4","Player 5","Player 6"]};
-let ADV=false,SEQ="";
-document.addEventListener("keydown",e=>{if(ph!="menu"&&ph!="lobby")return;const a=document.activeElement;if(a&&(a.tagName=="INPUT"||a.tagName=="TEXTAREA"||a.tagName=="SELECT"))return;if(e.key.length==1){SEQ=(SEQ+e.key.toLowerCase()).slice(-11);if(SEQ=="qwertyuiop3"){ADV=!ADV;SEQ="";render()}}});
 const $=document.getElementById("app");
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&","<":"<",">":">",'"':"""}[c]));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const C=id=>cards.find(c=>c.id==id);
 function parse(){cards=[];let n=0;S.split("\n").forEach(l=>{const[a,b]=l.split("|");cards.push({id:++n,t:"S",n:a,x:b})});I.split("\n").forEach(l=>{const[a,t,x]=l.split("|");cards.push({id:++n,t,n:a,x})});Q.split("\n").forEach(l=>{const[a,d,x]=l.split("|");cards.push({id:++n,t:"Q",n:a,cd:+d,x})})}
 parse();
-function shuf(a){a=a.slice();for(let i=a.length;i;){const j=Math.random()i--|0;[a[i],a[j]]=[a[j],a[i]]}return a}
-function cardH(c,o={}){if(!c)return"";return <div class="card ${o.click?"click":""} ${o.sel?"sel":""} ${o.best?"best":""} ${o.drop?"drop-best":""}" style="--c:${col[c.t]}" ${o.click?onclick="${o.click}":""}><h3>${esc(c.n)}</h3><i>${nm[c.t]}${c.t=="Q"?" · COOLDOWN "+c.cd:""}</i><p>${esc(c.x)}</p>${o.b||""}</div>}
-const row=ids=><div class="row">${ids.map(id=>cardH(C(id))).join("")||'<span class="m">none</span>'}</div>;
+function shuf(a){a=a.slice();for(let i=a.length;i;){const j=Math.random()*i--|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function cardH(c,o={}){if(!c)return"";return `<div class="card ${o.click?"click":""} ${o.sel?"sel":""}" style="--c:${col[c.t]}" ${o.click?`onclick="${o.click}"`:""}><h3>${esc(c.n)}</h3><i>${nm[c.t]}${c.t=="Q"?" · COOLDOWN "+c.cd:""}</i><p>${esc(c.x)}</p>${o.b||""}</div>`}
+const row=ids=>`<div class="row">${ids.map(id=>cardH(C(id))).join("")||'<span class="m">none</span>'}</div>`;
 function draw(){if(!G.deck.length){G.deck=shuf(G.disc);G.disc=[]}return G.deck.pop()}
 function drawEq(){if(G.ed.length<3)G.ed=shuf(cards.filter(c=>c.t=="Q").map(c=>c.id));return[G.ed.pop(),G.ed.pop(),G.ed.pop()]}
 function dealHand(){const i=G.i;if(!(G.hand[i]||[]).length)G.hand[i]=[draw(),draw()].filter(Boolean);if(!G.P[i].eq&&!(G.eh[i]||[]).length)G.eh[i]=drawEq()}
 function start(){const sv=shuf(cards.filter(c=>c.t=="S")),it=shuf(cards.filter(c=>c.t!="S"&&c.t!="Q").map(c=>c.id));
-if(sv.length<ui.n||it.length<ui.n3)return alert("Not enough cards for that many players.");
-G={lastWin:[],deck:it,disc:[],ed:[],eh:{},pi:null,pe:null,r:1,i:0,hand:{},log:[],P:ui.names.slice(0,ui.n).map((n,k)=>({n:n||"Player "+(k+1),s:sv[k].id,inv:[it.pop()],eq:null,cd:0,eu:false,w:0,ov:"",tg:{},lost:false,ou:false,used:false}))};ph=ONL?"pick":"pass";ONL&&deal();render()}
+ if(sv.length<ui.n||it.length<ui.n*3)return alert("Not enough cards for that many players.");
+ G={lastWin:[],deck:it,disc:[],ed:[],eh:{},pi:null,pe:null,r:1,i:0,hand:{},log:[],P:ui.names.slice(0,ui.n).map((n,k)=>({n:n||"Player "+(k+1),s:sv[k].id,inv:[it.pop()],eq:null,cd:0,eu:false,w:0,ov:"",tg:{},lost:false,ou:false,used:false}))};ph=ONL?"pick":"pass";ONL&&deal();render()}
 function okPick(){const p=G.P[G.i],h=G.hand[G.i]||[],e=G.eh[G.i]||[];if(!h.includes(G.pi)||(e.length&&!e.includes(G.pe)))return;
-p.inv.push(G.pi);const o=h.find(x=>x!=G.pi);o&&G.disc.push(o);G.hand[G.i]=[];if(e.length){p.eq=G.pe;G.eh[G.i]=[]}G.pi=G.pe=null;adv()}
+ p.inv.push(G.pi);const o=h.find(x=>x!=G.pi);o&&G.disc.push(o);G.hand[G.i]=[];if(e.length){p.eq=G.pe;G.eh[G.i]=[]}G.pi=G.pe=null;adv()}
 function trim(id){const p=G.P[G.i];p.inv=p.inv.filter(x=>x!=id);G.disc.push(id);adv()}
 function adv(){const p=G.P[G.i];if(slots(p)>lim(p)){render();return}G.i++;ph=G.i>=G.P.length?"score":ONL?"pick":"pass";if(ph=="pick"&&ONL)deal();render()}
 function drop(i,id){const p=G.P[i];p.inv=p.inv.filter(x=>x!=id);G.disc.push(id);render()}
@@ -197,25 +189,25 @@ const CONS=new Set(["Topaz Brooch","Regenerative Scrap","Planula","Pluripotent L
 const slots=p=>p.inv.reduce((a,id)=>a+(C(id)&&C(id).t=="H"?2:1),0);
 const lim=p=>{const c=p.inv.map(C).filter(Boolean).map(c=>c.n),s=C(p.s);return c.includes("Transcendence")?2:ui.limit+(s&&s.n=="MUL-T"?2:0)+(c.includes("Hopoo Feather")?1:0)};
 const E={
-"Soldier's Syringe":x=>{x.A(2);x.B(5x.W)},
+"Soldier's Syringe":x=>{x.A(2);x.B(5*x.W)},
 "Crowbar":x=>x.N<=2&&x.C(1.25),
 "Lens-Maker's Glasses":x=>x.C(1.05**x.W),
 "Tri-Tip Dagger":x=>x.H({t:"most",pct:8}),
-"Paul's Goat Hoof":x=>x.A(1.5x.G),
-"Monster Tooth":x=>x.A(x.rd2),
+"Paul's Goat Hoof":x=>x.A(1.5*x.G),
+"Monster Tooth":x=>x.A(x.rd**2),
 "Bundle of Fireworks":x=>{x.A(3);x.H({t:"one",flat:3})},
-"Gasoline":x=>x.B(2x.oppItems),
+"Gasoline":x=>x.B(2*x.oppItems),
 "Medkit":x=>{x.A(4);x.N<=x.minOpp&&x.C(1.2)},
-"Bustling Fungus":x=>x.A(3x.rd/2),
+"Bustling Fungus":x=>x.A(3*x.rd/2),
 "Bison Steak":x=>{x.A(2);x.Y>0&&x.B(10)},
 "Topaz Brooch":x=>x.A(1),
 "Armor-Piercing Rounds":x=>x.H({t:"mostRY",pct:12}),
 "Energy Drink":x=>x.B(4*x.os),
-"Rusted Key":x=>{x.A(2);x.C(1.1Math.max(0,x.N-2))},
+"Rusted Key":x=>{x.A(2);x.C(1.1**Math.max(0,x.N-2))},
 "Delicate Watch":x=>x.W==1&&x.D(1.05),
 "Fuel Cell":x=>x.A(2),
 "Stun Grenade":x=>x.H({t:"one",cm:"drop"}),
-"Mocha":x=>x.B(3x.N),
+"Mocha":x=>x.B(3*x.N),
 "Cautious Slug":x=>{x.A(2);x.lost&&x.B(25)},
 "Oddly-shaped Opal":x=>{x.A(2);x.H({t:"one",cm:"nos"})},
 "Ukulele":x=>{x.A(3);x.G>=3&&x.C(1.5)},
@@ -224,20 +216,20 @@ const E={
 "Brilliant Behemoth":x=>x.H({t:"all",pct:5}),
 "Kjaro's Band":x=>{x.B(15);x.R>0&&x.C(1.15)},
 "Runald's Band":x=>{x.B(15);x.Y>0&&x.C(1.15)},
-"Razorwire":x=>x.H({t:"all",pct:3x.G}),
+"Razorwire":x=>x.H({t:"all",pct:3*x.G}),
 "Chronobauble":x=>x.H({t:"one",cm:"half"}),
 "Hopoo Feather":x=>x.A(4),
 "Wax Quail":x=>x.B(5),
 "Red Whip":x=>x.C(1.05**(x.G-1)),
-"Squid Polyp":x=>x.H({t:"one",flat:2x.W}),
-"Ghor's Tome":x=>x.A(1.5x.N),
-"Infusion":x=>x.A(x.rdx.N/2),
+"Squid Polyp":x=>x.H({t:"one",flat:2*x.W}),
+"Ghor's Tome":x=>x.A(1.5*x.N),
+"Infusion":x=>x.A(x.rd*x.N/2),
 "Leeching Seed":x=>{x.H({t:"one",flat:4});x.F("+",2)},
 "Death Mark":x=>x.H({t:"one",pct:20,cond:"3tiers"}),
-"Wake of Vultures":x=>{const y=x.items.find(c=>c.t=="Y"&&c.n!="Wake of Vultures");y&&E[y.n]&&Ey.n},
+"Wake of Vultures":x=>{const y=x.items.find(c=>c.t=="Y"&&c.n!="Wake of Vultures");y&&E[y.n]&&E[y.n](x)},
 "Predatory Instincts":x=>{x.A(2);x.C(1.1**x.os)},
 "Regenerative Scrap":x=>x.A(3),
-"Fireman's Boots":x=>x.B(8x.bigger),
+"Fireman's Boots":x=>x.B(8*x.bigger),
 "Lepton Daisy":x=>x.A(1),
 "Gesture of the Drowned":x=>x.A(2),
 "Sticky Bomb":x=>x.H({t:"one",pct:25}),
@@ -247,21 +239,21 @@ const E={
 "Happiest Mask":x=>x.C(1.1**(x.R+x.L+x.V)),
 "Unstable Tesla Coil":x=>x.H({t:"all",pct:12}),
 "Resonance Disc":x=>x.C(2.5),
-"Shattering Justice":x=>x.H({t:"most",pct:q=>Math.min(40,10q.W)}),
-"Bandolier":x=>x.B(4x.N),
-"Soulbound Catalyst":x=>x.D(1.02x.N),
+"Shattering Justice":x=>x.H({t:"most",pct:q=>Math.min(40,10*q.W)}),
+"Bandolier":x=>x.B(4*x.N),
+"Soulbound Catalyst":x=>x.D(1.02**x.N),
 "Spare Drone Parts":x=>{x.A(4);x.C(1.3)},
 "Symbiotic Scorpion":x=>{x.H({t:"one",pct:20});x.F("+",5)},
 "Charged Perforator":x=>{x.A(6);x.F("+",6)},
 "Titanic Knurl":x=>{x.A(8);x.C(1.1)},
 "Queen's Gland":x=>x.B(Math.min(50,10*x.G)),
-"Halcyon Seed":x=>x.C(1.2x.R),
-"Mired Urn":x=>x.H({t:"all",pct:3x.N}),
+"Halcyon Seed":x=>x.C(1.2**x.R),
+"Mired Urn":x=>x.H({t:"all",pct:3*x.N}),
 "Defiant Gouge":x=>{x.H({t:"one",pct:20});x.A(3)},
 "Genesis Loop":x=>x.C(1.3),
 "Nkuhana's Opinion":x=>x.lost&&x.B(50),
 "Little Disciple":x=>{x.A(5);x.C(1.05**(x.Y+x.R))},
-"Empathy Cores":x=>x.A(2(x.O+1)),
+"Empathy Cores":x=>x.A(2*(x.O+1)),
 "Shatterspleen":x=>x.H({t:"one",pct:10}),
 "Shaped Glass":x=>{x.C(2);x.sn!="False Son"&&x.H({t:"one",give:4})},
 "Brittle Crown":x=>x.N<=2&&x.C(2),
@@ -269,20 +261,20 @@ const E={
 "Corpsebloom":x=>{x.A(8);x.H({t:"all",pct:8})},
 "Purity":x=>x.C(1.5),
 "Visions of Heresy":x=>x.F("×",1.35),
-"Eulogy Zero":x=>x.C(1.15x.T),
+"Eulogy Zero":x=>x.C(1.15**x.T),
 "Light Flux Pauldron":x=>{x.A(4);x.H({t:"all",cm:"half"})},
-"Egocentrism":x=>x.D(1.05x.L),
-"Plasma Shrimp":x=>x.C(1.1x.V),
-"Needletick":x=>{x.H({t:"one",pct:10});x.A(2x.V)},
+"Egocentrism":x=>x.D(1.05**x.L),
+"Plasma Shrimp":x=>x.C(1.1**x.V),
+"Needletick":x=>{x.H({t:"one",pct:10});x.A(2*x.V)},
 "Lost Seer's Lenses":x=>x.H({t:"one",pct:30}),
 "Polylute":x=>x.H({t:"all",pct:7}),
-"Newly Hatched Zoea":x=>x.A(3x.V),
-"Benthic Bloom":x=>x.B(5x.G),
-"Voidsent Flame":x=>{x.A(2x.O);x.B(10)},
+"Newly Hatched Zoea":x=>x.A(3*x.V),
+"Benthic Bloom":x=>x.B(5*x.G),
+"Voidsent Flame":x=>{x.A(2*x.O);x.B(10)},
 "Sanctified Crown":x=>{x.A(10);x.C(1.6)},
 "Heart of the Pilgrim":x=>{x.B(60);x.H({t:"all",pct:6})},
 "Seraph's Edict":x=>{x.D(1.2);x.H({t:"most",pct:10})},
-"Ascendant Relic":x=>{x.A(3x.N);x.C(1.2)},
+"Ascendant Relic":x=>{x.A(3*x.N);x.C(1.2)},
 "Vow of Radiance":x=>{x.C(3);x.H({t:"all",pct:10})}};
 const EQF={
 "Recycler":x=>x.A(7),
@@ -294,126 +286,119 @@ const EQF={
 "Disposable Missile Launcher":x=>{x.H({t:"one",pct:12});x.A(1)},
 "Volcanic Egg":x=>x.D(1.08),
 "Eccentric Vase":x=>x.F("+",9),
-"Radar Scanner":x=>x.B(3x.oppItems),
+"Radar Scanner":x=>x.B(3*x.oppItems),
 "Sawmarang":x=>{x.H({t:"one",flat:6});x.A(2)},
 "Super Massive Leech":x=>{x.H({t:"one",flat:8});x.F("+",4)},
-"Milky Chrysalis":x=>x.A(2);x.C(1.25)},
-"The Back-up":x=>x.A(1.5x.N),
+"Milky Chrysalis":x=>{x.A(2);x.C(1.25)},
+"The Back-up":x=>x.A(1.5*x.N),
 "Foreign Fruit":x=>x.B(20)};
 const ES={
 "Huntress":x=>x.H({t:"win",pct:10}),
 "Bandit":x=>x.N<x.minOpp&&x.C(1.3),
 "MUL-T":x=>x.ou&&x.C(1.5),
-"Engineer":x=>{x.A(2x.G);x.B(3*x.G)},
-"Artificer":x=>x.C(1.1x.T),
+"Engineer":x=>{x.A(2*x.G);x.B(3*x.G)},
+"Artificer":x=>x.C(1.1**x.T),
 "Mercenary":x=>x.ou&&x.D(1.2),
-"REX":x=>x.B(5x.rd),
+"REX":x=>x.B(5*x.rd),
 "Loader":x=>x.A(x.W),
 "Acrid":x=>x.H({t:"all",pct:4}),
 "Captain":x=>x.ou&&x.H({t:"one",pct:40}),
-"Void Fiend":x=>x.B(8x.V),
+"Void Fiend":x=>x.B(8*x.V),
 "Seeker":x=>x.lost&&x.B(30),
-"False Son":x=>x.B(10x.L),
+"False Son":x=>x.B(10*x.L),
 "Chef":x=>x.A(2),
-"Operator":x=>x.A(1.5x.O),
+"Operator":x=>x.A(1.5*x.O),
 "Drifter":x=>x.B(5),
 "Acolyte":x=>x.w<x.maxOppW&&x.C(1.4),
-"Heretic":x=>x.A(2x.L0)};
-const add=(x,s,v,c)=>x.ent.push({s,v,c}),sm=(x,s)=>x.ent.filter(e=>e.s==s).reduce((a,e)=>a+e.v,0),pr=(x,s)=>x.ent.filter(e=>e.s==s).reduce((a,e)=>ae.v,1),ci=(x,n)=>x.items.find(c=>c.n==n);
-function calc(stG=G){const P=stG.P,n=P.length;
-const X=P.map((p,i)=>{const items=p.inv.map(C).filter(Boolean),sv=C(p.s),sn=sv?sv.n:"",names=new Set(items.map(c=>c.n)),b={W:0,G:0,R:0,Y:0,L:0,V:0,H:0};
-items.forEach(c=>b[c.t]++);const k={...b};if(sn=="Void Fiend")k.G+=k.W;if(names.has("Benthic Bloom"))k.R+=k.G;if(sn=="Heretic")k.L*=2;
-const x={...k,i,items,sv,sn,names,b,L0:b.L,N:items.length,rd:stG.r,O:n-1,lost:p.lost,w:p.w,ou:p.ou&&!p.used,eq:C(p.eq),eu:!!(p.eq&&p.eu&&p.cd==0),T:Object.values(k).filter(v=>v>0).length,os:items.filter(c=>OS.has(c.n)).length,ent:[],hits:[],used:[],cur:null};
-x.A=v=>add(x,"A",v,x.cur);x.B=v=>add(x,"B",v,x.cur);x.C=v=>add(x,"C",v,x.cur);x.D=v=>add(x,"D",v,x.cur);x.F=(m,v)=>add(x,"F"+m,v,x.cur);x.H=h=>x.hits.push({...h,c:x.cur,f:i});return x});
-X.forEach(x=>{const o=X.filter(y=>y!==x);x.minOpp=Math.min(...o.map(y=>y.N));x.oppItems=o.reduce((a,y)=>a+y.N,0);x.bigger=o.filter(y=>y.N>x.N).length;x.maxOppW=Math.max(...o.map(y=>y.w));
-if(x.sv){x.cur=x.sv;ES[x.sn]&&ESx.sn}x.items.forEach(c=>{x.cur=c;E[c.n]&&Ec.n});
-if(x.eu&&x.eq){x.cur=x.eq;EQF[x.eq.n]&&EQFx.eq.n}});
-const tgts=(h)=>{const y=X[h.f],o=X.filter(z=>z!==y);
-if(h.t=="all")return o.map(z=>z.i);
-if(h.t=="most"||h.t=="mostRY"){const v=z=>h.t=="most"?z.N:z.b.R+z.b.Y,m=Math.max(...o.map(v));return o.filter(z=>v(z)==m).map(z=>z.i)}
-if(h.t=="win")return stG.lastWin.filter(j=>j!=h.f);
-const t=P[h.f].tg[h.c.id];return [t!=null&&t!=h.f?+t:(h.f+1)%n]};
-const HA=X.flatMap(y=>y.hits.map(h=>({h,T:tgts(h)})));
-X.forEach((x,i)=>{const inH=HA.filter(e=>e.T.includes(i)).map(e=>e.h);
-if(inH.some(h=>h.cm=="nos"))x.ent=x.ent.filter(e=>!OS.has(e.c.n));
-if(x.names.has("Purity")&&x.sn!="False Son")x.ent=x.ent.filter(e=>e.c.t!="W");
-if(x.names.has("Backup Magazine")){const m={};x.ent.forEach(e=>{if(e.s=="A"&&e.c.t=="W"&&e.c.n!="Backup Magazine")m[e.c.id]=(m[e.c.id]||0)+e.v});const v=Math.max(0,...Object.values(m));if(v)add(x,"A",v,ci(x,"Backup Magazine"))}
-if(x.names.has("Encrusted Key"))x.ent.filter(e=>(e.s=="A"||e.s=="B")&&e.c.t=="W").forEach(e=>add(x,e.s,e.v,e.c));
-if(x.names.has("Rejuvenation Rack"))x.ent.filter(e=>e.s=="B"&&e.c.t=="G").forEach(e=>add(x,"B",e.v,e.c));
-const os={};x.ent.forEach(e=>{if(e.s=="A"&&OS.has(e.c.n))os[e.c.id]=(os[e.c.id]||0)+e.v});
-Object.keys(os).forEach(id=>{const c=C(id);if(x.names.has("Brainstalks"))add(x,"A",2os[id],c);if(x.names.has("Alien Head"))add(x,"A",4,c)});
-const big=()=>{let b=-1;x.ent.forEach((e,j)=>{if(e.s=="C"&&e.v>1&&(b<0||e.v>x.ent[b].v))b=j});return b};
-inH.forEach(h=>{if(h.cm=="drop"||h.cm=="half"){const j=big();if(j>=0){if(h.cm=="drop")x.ent.splice(j,1);else x.ent[j]={...x.ent[j],v:1+(x.ent[j].v-1)/2}}}});
-if(X.some(y=>y!==x&&y.names.has("Genesis Loop")))x.ent=x.ent.filter(e=>!(e.s=="C"&&e.v>1&&e.v<=1.3+1e-9));
-if(x.sn=="Commando")add(x,"A",1.5new Set(x.ent.filter(e=>e.s=="A"&&e.c.t!="S"&&e.c.t!="Q").map(e=>e.c.id)).size,x.sv);
-if(x.sn=="Railgunner"&&x.ent.some(e=>e.s=="C"&&e.c.t!="S"&&e.c.t!="Q"&&e.v>=1.5))add(x,"C",1.25,x.sv);
-x.st={};let v=10+sm(x,"A");x.st.A=v;v*=1+sm(x,"B")/100;x.st.B=v;v*=pr(x,"C");x.st.C=v;v=Math.pow(v,pr(x,"D"));x.st.D=v;x.v=v});
-const pens=X.map(()=>[]);
-HA.forEach(({h,T})=>T.forEach(j=>{const q=X[j];if(h.cond=="3tiers"&&q.T<3)return;if(h.give)add(q,"F+",h.give,h.c);
-if(h.flat||h.pct)pens[j].push({flat:h.flat||0,pct:(typeof h.pct=="function"?h.pct(q):h.pct)||0,u:X[h.f].names.has("Shatterspleen")})}));
-X.forEach((q,j)=>{const sh=[],sc=[];q.items.forEach(c=>{if(c.n=="Aegis")sh.push({n:Infinity});if(c.n=="Safer Spaces")sh.push({n:1});if(CONS.has(c.n))sc.push({n:c.n=="Pluripotent Larva"?Infinity:1,id:c.id})});if(q.sn=="Enforcer")sh.push({n:1});if(q.eqNeg)sh.push({n:Infinity});
-const sl=[...sh,...sc],st=p=>p.flat+p.pctq.v/100;
-const kept=pens[j].sort((a,b)=>st(b)-st(a)).filter(p=>{if(p.u)return true;const s=sl.find(z=>z.n>0);if(!s)return true;s.n--;if(s.id&&!q.used.includes(s.id))q.used.push(s.id);return false});
-let v=Math.max(0,q.v-kept.reduce((a,p)=>a+p.flat,0));v=1-Math.min(75,kept.reduce((a,p)=>a+p.pct,0))/100;q.st.E=v;
-v+=sm(q,"F+");v*=pr(q,"F×");q.sc=Math.round(v100)/100;q.tg=[...new Set(q.hits.filter(h=>h.t=="one").map(h=>h.c.id))]});
-return X}
-function simVal(idx,inv,eq,eu,ou){const cl={...G,P:G.P.map((p,k)=>k==idx?{...p,inv:[...inv],eq:eq!=null?eq:p.eq,eu:eu!=null?eu:p.eu,ou:ou!=null?ou:p.ou}:{...p})};const R=calc(cl),meR=R[idx],oppMax=Math.max(0,...R.filter((_,k)=>k!=idx).map(r=>r.sc));let val=meR.sc-oppMax0.6;const rem=Math.max(1,ui.target-G.P[idx].w);inv.map(C).filter(Boolean).forEach(c=>{if(!OS.has(c.n)&&!CONS.has(c.n))val+=1.8;if(c.n=="Infusion")val+=rem1.2;if(c.n=="Mercurial Rachis")val+=meR.sc>=oppMax?18:6;if(c.n=="Eulogy Zero"||c.n=="Little Disciple"||c.n=="Soulbound Catalyst")val+=3.5;if(c.n=="Gesture of the Drowned")val+=3});return val}
+"Heretic":x=>x.A(2*x.L0)};
+const add=(x,s,v,c)=>x.ent.push({s,v,c}),sm=(x,s)=>x.ent.filter(e=>e.s==s).reduce((a,e)=>a+e.v,0),pr=(x,s)=>x.ent.filter(e=>e.s==s).reduce((a,e)=>a*e.v,1),ci=(x,n)=>x.items.find(c=>c.n==n);
+function calc(){const P=G.P,n=P.length;
+ const X=P.map((p,i)=>{const items=p.inv.map(C).filter(Boolean),sv=C(p.s),sn=sv?sv.n:"",names=new Set(items.map(c=>c.n)),b={W:0,G:0,R:0,Y:0,L:0,V:0,H:0};
+  items.forEach(c=>b[c.t]++);const k={...b};if(sn=="Void Fiend")k.G+=k.W;if(names.has("Benthic Bloom"))k.R+=k.G;if(sn=="Heretic")k.L*=2;
+  const x={...k,i,items,sv,sn,names,b,L0:b.L,N:items.length,rd:G.r,O:n-1,lost:p.lost,w:p.w,ou:p.ou&&!p.used,eq:C(p.eq),eu:!!(p.eq&&p.eu&&p.cd==0),T:Object.values(k).filter(v=>v>0).length,os:items.filter(c=>OS.has(c.n)).length,ent:[],hits:[],used:[],cur:null};
+  x.A=v=>add(x,"A",v,x.cur);x.B=v=>add(x,"B",v,x.cur);x.C=v=>add(x,"C",v,x.cur);x.D=v=>add(x,"D",v,x.cur);x.F=(m,v)=>add(x,"F"+m,v,x.cur);x.H=h=>x.hits.push({...h,c:x.cur,f:i});return x});
+ X.forEach(x=>{const o=X.filter(y=>y!==x);x.minOpp=Math.min(...o.map(y=>y.N));x.oppItems=o.reduce((a,y)=>a+y.N,0);x.bigger=o.filter(y=>y.N>x.N).length;x.maxOppW=Math.max(...o.map(y=>y.w));
+  if(x.sv){x.cur=x.sv;ES[x.sn]&&ES[x.sn](x)}x.items.forEach(c=>{x.cur=c;E[c.n]&&E[c.n](x)});
+  if(x.eu&&x.eq){x.cur=x.eq;EQF[x.eq.n]&&EQF[x.eq.n](x)}});
+ const tgts=(h)=>{const y=X[h.f],o=X.filter(z=>z!==y);
+  if(h.t=="all")return o.map(z=>z.i);
+  if(h.t=="most"||h.t=="mostRY"){const v=z=>h.t=="most"?z.N:z.b.R+z.b.Y,m=Math.max(...o.map(v));return o.filter(z=>v(z)==m).map(z=>z.i)}
+  if(h.t=="win")return G.lastWin.filter(j=>j!=h.f);
+  const t=P[h.f].tg[h.c.id];return [t!=null&&t!=h.f?+t:(h.f+1)%n]};
+ const HA=X.flatMap(y=>y.hits.map(h=>({h,T:tgts(h)})));
+ X.forEach((x,i)=>{const inH=HA.filter(e=>e.T.includes(i)).map(e=>e.h);
+  if(inH.some(h=>h.cm=="nos"))x.ent=x.ent.filter(e=>!OS.has(e.c.n));
+  if(x.names.has("Purity")&&x.sn!="False Son")x.ent=x.ent.filter(e=>e.c.t!="W");
+  if(x.names.has("Backup Magazine")){const m={};x.ent.forEach(e=>{if(e.s=="A"&&e.c.t=="W"&&e.c.n!="Backup Magazine")m[e.c.id]=(m[e.c.id]||0)+e.v});const v=Math.max(0,...Object.values(m));if(v)add(x,"A",v,ci(x,"Backup Magazine"))}
+  if(x.names.has("Encrusted Key"))x.ent.filter(e=>(e.s=="A"||e.s=="B")&&e.c.t=="W").forEach(e=>add(x,e.s,e.v,e.c));
+  if(x.names.has("Rejuvenation Rack"))x.ent.filter(e=>e.s=="B"&&e.c.t=="G").forEach(e=>add(x,"B",e.v,e.c));
+  const os={};x.ent.forEach(e=>{if(e.s=="A"&&OS.has(e.c.n))os[e.c.id]=(os[e.c.id]||0)+e.v});
+  Object.keys(os).forEach(id=>{const c=C(id);if(x.names.has("Brainstalks"))add(x,"A",2*os[id],c);if(x.names.has("Alien Head"))add(x,"A",4,c)});
+  const big=()=>{let b=-1;x.ent.forEach((e,j)=>{if(e.s=="C"&&e.v>1&&(b<0||e.v>x.ent[b].v))b=j});return b};
+  inH.forEach(h=>{if(h.cm=="drop"||h.cm=="half"){const j=big();if(j>=0){if(h.cm=="drop")x.ent.splice(j,1);else x.ent[j]={...x.ent[j],v:1+(x.ent[j].v-1)/2}}}});
+  if(X.some(y=>y!==x&&y.names.has("Genesis Loop")))x.ent=x.ent.filter(e=>!(e.s=="C"&&e.v>1&&e.v<=1.3+1e-9));
+  if(x.sn=="Commando")add(x,"A",1.5*new Set(x.ent.filter(e=>e.s=="A"&&e.c.t!="S"&&e.c.t!="Q").map(e=>e.c.id)).size,x.sv);
+  if(x.sn=="Railgunner"&&x.ent.some(e=>e.s=="C"&&e.c.t!="S"&&e.c.t!="Q"&&e.v>=1.5))add(x,"C",1.25,x.sv);
+  x.st={};let v=10+sm(x,"A");x.st.A=v;v*=1+sm(x,"B")/100;x.st.B=v;v*=pr(x,"C");x.st.C=v;v=Math.pow(v,pr(x,"D"));x.st.D=v;x.v=v});
+ const pens=X.map(()=>[]);
+ HA.forEach(({h,T})=>T.forEach(j=>{const q=X[j];if(h.cond=="3tiers"&&q.T<3)return;if(h.give)add(q,"F+",h.give,h.c);
+  if(h.flat||h.pct)pens[j].push({flat:h.flat||0,pct:(typeof h.pct=="function"?h.pct(q):h.pct)||0,u:X[h.f].names.has("Shatterspleen")})}));
+ X.forEach((q,j)=>{const sh=[],sc=[];q.items.forEach(c=>{if(c.n=="Aegis")sh.push({n:Infinity});if(c.n=="Safer Spaces")sh.push({n:1});if(CONS.has(c.n))sc.push({n:c.n=="Pluripotent Larva"?Infinity:1,id:c.id})});if(q.sn=="Enforcer")sh.push({n:1});if(q.eqNeg)sh.push({n:Infinity});
+  const sl=[...sh,...sc],st=p=>p.flat+p.pct*q.v/100;
+  const kept=pens[j].sort((a,b)=>st(b)-st(a)).filter(p=>{if(p.u)return true;const s=sl.find(z=>z.n>0);if(!s)return true;s.n--;if(s.id&&!q.used.includes(s.id))q.used.push(s.id);return false});
+  let v=Math.max(0,q.v-kept.reduce((a,p)=>a+p.flat,0));v*=1-Math.min(75,kept.reduce((a,p)=>a+p.pct,0))/100;q.st.E=v;
+  v+=sm(q,"F+");v*=pr(q,"F×");q.sc=Math.round(v*100)/100;q.tg=[...new Set(q.hits.filter(h=>h.t=="one").map(h=>h.c.id))]});
+ return X}
 function fin(){const R=calc(),sc=G.P.map((p,i)=>p.ov!==""&&!isNaN(+p.ov)?+p.ov:R[i].sc),m=Math.max(...sc);
-let w=G.P.map((p,i)=>i).filter(i=>sc[i]==m||(R[i].names.has("Dio's Best Friend")&&sc[i]>=0.85m));
-const wq=w.filter(i=>R[i].names.has("Wax Quail"));if(wq.length&&wq.length<w.length&&w.every(i=>sc[i]==m))w=wq;
-w.forEach(i=>{G.P[i].w+=R[i].names.has("Mercurial Rachis")?2:1});
-G.log.push(Round ${G.r}: ${w.map(i=>G.P[i].n).join(" & ")} won — ${G.P.map((p,i)=>p.n+" "+sc[i]).join(", ")});
-G.P.forEach((p,i)=>{p.lost=!w.includes(i);p.ov="";p.tg={};if(p.ou)p.used=true;p.ou=false;
-if(R[i].eu)p.cd=C(p.eq).cd;else if(p.cd>0)p.cd--;p.eu=false;
-const g=R[i].names.has("Gesture of the Drowned");
-const rm=p.inv.filter(id=>{const c=C(id);return c&&((!g&&OS.has(c.n))||R[i].used.includes(id))});p.inv=p.inv.filter(id=>!rm.includes(id));G.disc.push(...rm)});
-G.lastWin=w;const mx=Math.max(...G.P.map(p=>p.w));if(mx>=ui.target&&G.P.filter(p=>p.w==mx).length==1)ph="end";else{G.r++;G.i=0;G.hand={};ph=ONL?"pick":"pass";ONL&&deal()}render()}
+ let w=G.P.map((p,i)=>i).filter(i=>sc[i]==m||(R[i].names.has("Dio's Best Friend")&&sc[i]>=0.85*m));
+ const wq=w.filter(i=>R[i].names.has("Wax Quail"));if(wq.length&&wq.length<w.length&&w.every(i=>sc[i]==m))w=wq;
+ w.forEach(i=>{G.P[i].w+=R[i].names.has("Mercurial Rachis")?2:1});
+ G.log.push(`Round ${G.r}: ${w.map(i=>G.P[i].n).join(" & ")} won — ${G.P.map((p,i)=>p.n+" "+sc[i]).join(", ")}`);
+ G.P.forEach((p,i)=>{p.lost=!w.includes(i);p.ov="";p.tg={};if(p.ou)p.used=true;p.ou=false;
+  if(R[i].eu)p.cd=C(p.eq).cd;else if(p.cd>0)p.cd--;p.eu=false;
+  const g=R[i].names.has("Gesture of the Drowned");
+  const rm=p.inv.filter(id=>{const c=C(id);return c&&((!g&&OS.has(c.n))||R[i].used.includes(id))});p.inv=p.inv.filter(id=>!rm.includes(id));G.disc.push(...rm)});
+ G.lastWin=w;const mx=Math.max(...G.P.map(p=>p.w));if(mx>=ui.target&&G.P.filter(p=>p.w==mx).length==1)ph="end";else{G.r++;G.i=0;G.hand={};ph=ONL?"pick":"pass";ONL&&deal()}render()}
 const V={
-menu:()=><div class="panel"><h2>New game</h2>Players <select onchange="ui.n=+this.value;render()">${[2,3,4,5,6].map(n=><option ${n==ui.n?"selected":""}>${n}).join("")}</select> First to <input type="number" min="1" value="${ui.target}" style="width:60px" onchange="ui.target=+this.value"> wins Inventory limit <input type="number" min="1" value="${ui.limit}" style="width:60px" onchange="ui.limit=+this.value"><div class="row">${Array.from({length:ui.n},(_,k)=>).join("")}</div><button class="big" onclick="start()">Deal &amp; start</button></div> <div class="panel"><h2>Play online</h2>Your name <input id="on" value="Player" style="width:120px"> <button onclick="host()">Host game</button> <input id="rc" placeholder="Room code" style="width:110px;text-transform:uppercase"> <button onclick="join()">Join</button><div class="m">Peer-to-peer over WebRTC. The host's tab runs the game, so keep it open. Uses the "first to" and inventory settings above.</div></div> <div class="panel m"><b>How it works:</b> Each player gets a random Survivor and 1 starting Item. On your first turn you also choose 1 of 3 <b style="color:#e8761a">Equipment</b> cards, which is yours for the rest of the game and doesn't use an inventory slot. Each round, players take turns in hotseat: draw 2 Items, keep 1 (the other is discarded). Then everyone calculates their score by hand and enters it; the highest score wins the round. Scoring: [A] add, [B] % pool, [C] multipliers, [D] powers, [E] opponent penalties, [F] final. Scores are calculated automatically (you can override any score). <b>Hallowed</b> items are very strong but take 2 inventory slots. <b>Equipment</b> is a spendable action: tick it on the scoring screen to use it that round, then it recharges for its cooldown in rounds.</div>,
-pass:()=>{const p=G.P[G.i];return <div class="panel c"><h2>Pass the device to</h2><div class="who">${esc(p.n)}</div><p class="m">Everyone else look away!</p><button class="big" onclick="dealHand();ph='pick';render()">I’m ${esc(p.n)} — show my cards</button></div>},
-pick:()=>{if(ONL&&G.i!=me)return <div class="panel c"><h2>Waiting for ${esc(G.P[G.i].n)} to choose…</h2></div>+G.P.map(p=><div class="panel"><b>${esc(p.n)}</b> · Wins ${p.w}<div class="row">${cardH(C(p.s))}${p.eq?cardH(C(p.eq)):""}${p.inv.map(id=>cardH(C(id))).join("")}</div></div>).join("");const p=G.P[G.i],h=G.hand[G.i]||[],e=G.eh[G.i]||[],over=slots(p)>lim(p),ready=h.includes(G.pi)&&(!e.length||e.includes(G.pe));
-let bestI=null,bestE=null,bestTrim=null;
-if(ADV){if(over){let bv=-1e9;p.inv.forEach(id=>{const v=simVal(G.i,p.inv.filter(x=>x!=id));if(v>bv){bv=v;bestTrim=id}})}else{let bv=-1e9;h.forEach(id=>{let inv=[...p.inv,id];const tp={...p,inv};if(slots(tp)>lim(tp)){let b2=-1e9;inv.forEach(x=>{const v2=simVal(G.i,inv.filter(y=>y!=x));if(v2>b2)b2=v2});if(b2>bv){bv=b2;bestI=id}}else{const v=simVal(G.i,inv);if(v>bv){bv=v;bestI=id}}});if(e.length){let be=-1e9;e.forEach(id=>{const v=simVal(G.i,p.inv,id,true);if(v>be){be=v;bestE=id}})}}}
-return <div class="panel"><h2>${esc(p.n)}</h2><div class="row">${cardH(C(p.s))}</div>+(over?<h3>Over your limit of ${lim(p)}! Tap an Item to discard it</h3><div class="row">${p.inv.map(id=>cardH(C(id),{click:go({a:'trim',id:${id}}),drop:ADV&&bestTrim==id})).join("")}</div>:<h3>Your Items</h3>${row(p.inv)}${p.eq?Your Equipment${row([p.eq])}:""}<h3>Choose 1 Item to keep</h3><div class="row">${h.map(id=>cardH(C(id),{click:go({a:'sel',k:'i',id:${id}}),sel:G.pi==id,best:ADV&&bestI==id})).join("")}</div>${e.length?Choose 1 Equipment (yours for the rest of the game)${e.map(id=>cardH(C(id),{click:go({a:'sel',k:'e',id:${id}}),sel:G.pe==id,best:ADV&&bestE==id})).join("")}:""}<button class="big" ${ready?"":"disabled"} onclick="go({a:'ok'})">Confirm</button>)+</div>},
-score:()=>{const R=calc(),f=v=>Math.round(v*100)/100;return <div class="panel"><h2>Round ${G.r}: scores</h2><p class="m">Scores are calculated automatically from every card. Pick targets for “Opp” effects, tick once-per-game abilities or Equipment, or type an override if a score looks wrong. One-shots are discarded automatically when you finish the round. Equipment you use starts its cooldown when the round ends. Draw effects (Fuel Cell, Lepton Daisy), Chef and Drifter are still manual. Deck: ${G.deck.length}, discard: ${G.disc.length}.</p></div>+G.P.map((p,i)=>{const x=R[i],st=x.st,isMe=!ONL||i==me;
-let recEq=false,recOu=false,dropId=null;
-if(ADV&&isMe){const base=simVal(i,p.inv,p.eq,false,false);if(p.eq&&p.cd==0&&simVal(i,p.inv,p.eq,true,p.ou)>base+0.5)recEq=true;if(["MUL-T","Mercenary","Captain"].includes(x.sn)&&!p.used&&simVal(i,p.inv,p.eq,p.eu,true)>base+1)recOu=true;let bd=base;p.inv.forEach(id=>{const v=simVal(i,p.inv.filter(y=>y!=id),p.eq,p.eu,p.ou);if(v>bd+1){bd=v;dropId=id}})}
-const sel=id=><select onchange="go({a:'tg',i:${i},id:${id},v:+this.value})">+G.P.map((q,j)=>j==i?"":<option value="${j}" ${(p.tg[id]!=null?p.tg[id]==j:j==(i+1)%G.P.length)?"selected":""}>→ ${esc(q.n)}</option>).join("")+</select>;
-const once=["MUL-T","Mercenary","Captain"].includes(x.sn)&&!p.used?<label class="${recOu&&!p.ou?"best-act":""}">🔘 <input type="checkbox" ${p.ou?"checked":""} onchange="go({a:'ou',i:${i},v:this.checked})"> use once-per-game ability</label>:"";
-const eqUI=p.eq?<label class="${recEq&&!p.eu?"best-act":""}">⚙️ <input type="checkbox" ${p.eu&&p.cd==0?"checked":""} ${p.cd>0?"disabled":""} onchange="go({a:'eu',i:${i},v:this.checked})"> use ${esc(C(p.eq).n)} ${p.cd>0?(recharging: ${p.cd} round${p.cd>1?"s":""} left):"(ready)"}</label>:"";
-return <div class="panel"><b>${esc(p.n)}</b> · Wins <button onclick="go({a:'w',i:${i},v:-1})">−</button> <b>${p.w}</b> <button onclick="go({a:'w',i:${i},v:1})">+</button> · Score <b style="font-size:26px">${x.sc}</b> · Override <input class="sc" type="number" step="any" placeholder="auto" value="${p.ov}" oninput="go({a:'ov',i:${i},v:this.value})"> ${once} ${eqUI}<div class="m">A ${f(st.A)} → B ${f(st.B)} → C ${f(st.C)} → D ${f(st.D)} → E ${f(st.E)} → F ${x.sc}</div><div class="row">${cardH(x.sv,{b:x.tg.includes(x.sv.id)?sel(x.sv.id):""})}${p.eq?cardH(C(p.eq),{b:x.tg.includes(p.eq)?sel(p.eq):""}):""}${p.inv.map(id=>cardH(C(id),{drop:ADV&&isMe&&dropId==id,b:(x.tg.includes(id)?sel(id):"")+Discard})).join("")}</div></div>}).join("")+<div class="panel c">${ONL==2?Waiting for the host to finish the round…:Finish round}</div>},
-end:()=><div class="panel c"><h2>Game over!</h2>${G.P.slice().sort((a,b)=>b.w-a.w).map((p,k)=>${k?"":"🏆 "}${esc(p.n)}: ${p.w} wins).join("")}<p class="m">Tie? Compare the last round’s scores.</p><button class="big" onclick="ONL?location.reload():(ph='menu',render())">New game</button></div><div class="panel m">${G.log.map(esc).join("<br>")}</div>,
-lobby:()=><div class="panel c"><h2>Room code</h2><div class="who">${esc(room)}</div><p class="m">Share this code. Others open this page and press Join.</p>${lobby.map((x,k)=>${k?"":"👑 "}${esc(x.n)}${k==me?" (you)":""}).join("")}${ONL==1?Start game:'<p class="m">Waiting for the host to start…</p>'}</div>,
-cards:()=><div class="panel"><button onclick="ph=back;render()">← Back</button><p class="m">Card list (cards are fixed in this version so the score calculator stays accurate).</p></div>+Object.keys(nm).map(t=><div class="panel"><h3 style="color:${col[t]}">${nm[t]} (${cards.filter(c=>c.t==t).length})</h3><div class="row">${cards.filter(c=>c.t==t).map(c=>cardH(c)).join("")}</div></div>).join("")};
+menu:()=>`<div class="panel"><h2>New game</h2>Players <select onchange="ui.n=+this.value;render()">${[2,3,4,5,6].map(n=>`<option ${n==ui.n?"selected":""}>${n}</option>`).join("")}</select> First to <input type="number" min="1" value="${ui.target}" style="width:60px" onchange="ui.target=+this.value"> wins Inventory limit <input type="number" min="1" value="${ui.limit}" style="width:60px" onchange="ui.limit=+this.value"><div class="row">${Array.from({length:ui.n},(_,k)=>`<input value="${esc(ui.names[k])}" oninput="ui.names[${k}]=this.value">`).join("")}</div><button class="big" onclick="start()">Deal &amp; start</button></div>
+<div class="panel"><h2>Play online</h2>Your name <input id="on" value="Player" style="width:120px"> <button onclick="host()">Host game</button> <input id="rc" placeholder="Room code" style="width:110px;text-transform:uppercase"> <button onclick="join()">Join</button><div class="m">Peer-to-peer over WebRTC. The host's tab runs the game, so keep it open. Uses the "first to" and inventory settings above.</div></div>
+<div class="panel m"><b>How it works:</b> Each player gets a random Survivor and 1 starting Item. On your first turn you also choose 1 of 3 <b style="color:#e8761a">Equipment</b> cards, which is yours for the rest of the game and doesn't use an inventory slot. Each round, players take turns in hotseat: draw 2 Items, keep 1 (the other is discarded). Then everyone calculates their score by hand and enters it; the highest score wins the round. Scoring: [A] add, [B] % pool, [C] multipliers, [D] powers, [E] opponent penalties, [F] final. Scores are calculated automatically (you can override any score). <b>Hallowed</b> items are very strong but take 2 inventory slots. <b>Equipment</b> is a spendable action: tick it on the scoring screen to use it that round, then it recharges for its cooldown in rounds.</div>`,
+pass:()=>{const p=G.P[G.i];return `<div class="panel c"><h2>Pass the device to</h2><div class="who">${esc(p.n)}</div><p class="m">Everyone else look away!</p><button class="big" onclick="dealHand();ph='pick';render()">I’m ${esc(p.n)} — show my cards</button></div>`},
+pick:()=>{if(ONL&&G.i!=me)return `<div class="panel c"><h2>Waiting for ${esc(G.P[G.i].n)} to choose…</h2></div>`+G.P.map(p=>`<div class="panel"><b>${esc(p.n)}</b> · Wins ${p.w}<div class="row">${cardH(C(p.s))}${p.eq?cardH(C(p.eq)):""}${p.inv.map(id=>cardH(C(id))).join("")}</div></div>`).join("");const p=G.P[G.i],h=G.hand[G.i]||[],e=G.eh[G.i]||[],over=slots(p)>lim(p),ready=h.includes(G.pi)&&(!e.length||e.includes(G.pe));
+ return `<div class="panel"><h2>${esc(p.n)}</h2><div class="row">${cardH(C(p.s))}</div>`+(over?`<h3>Over your limit of ${lim(p)}! Tap an Item to discard it</h3><div class="row">${p.inv.map(id=>cardH(C(id),{click:`go({a:'trim',id:${id}})`})).join("")}</div>`:`<h3>Your Items</h3>${row(p.inv)}${p.eq?`<h3>Your Equipment</h3>${row([p.eq])}`:""}<h3>Choose 1 Item to keep</h3><div class="row">${h.map(id=>cardH(C(id),{click:`go({a:'sel',k:'i',id:${id}})`,sel:G.pi==id})).join("")}</div>${e.length?`<h3>Choose 1 Equipment (yours for the rest of the game)</h3><div class="row">${e.map(id=>cardH(C(id),{click:`go({a:'sel',k:'e',id:${id}})`,sel:G.pe==id})).join("")}</div>`:""}<button class="big" ${ready?"":"disabled"} onclick="go({a:'ok'})">Confirm</button>`)+`</div>`},
+score:()=>{const R=calc(),f=v=>Math.round(v*100)/100;return `<div class="panel"><h2>Round ${G.r}: scores</h2><p class="m">Scores are calculated automatically from every card. Pick targets for “Opp” effects, tick once-per-game abilities or Equipment, or type an override if a score looks wrong. One-shots are discarded automatically when you finish the round. Equipment you use starts its cooldown when the round ends. Draw effects (Fuel Cell, Lepton Daisy), Chef and Drifter are still manual. Deck: ${G.deck.length}, discard: ${G.disc.length}.</p></div>`+G.P.map((p,i)=>{const x=R[i],st=x.st;
+ const sel=id=>`<select onchange="go({a:'tg',i:${i},id:${id},v:+this.value})">`+G.P.map((q,j)=>j==i?"":`<option value="${j}" ${(p.tg[id]!=null?p.tg[id]==j:j==(i+1)%G.P.length)?"selected":""}>→ ${esc(q.n)}</option>`).join("")+`</select>`;
+ const once=["MUL-T","Mercenary","Captain"].includes(x.sn)&&!p.used?`<label>🔘 <input type="checkbox" ${p.ou?"checked":""} onchange="go({a:'ou',i:${i},v:this.checked})"> use once-per-game ability</label>`:"";
+ const eqUI=p.eq?`<label>⚙️ <input type="checkbox" ${p.eu&&p.cd==0?"checked":""} ${p.cd>0?"disabled":""} onchange="go({a:'eu',i:${i},v:this.checked})"> use ${esc(C(p.eq).n)} ${p.cd>0?`(recharging: ${p.cd} round${p.cd>1?"s":""} left)`:"(ready)"}</label>`:"";
+ return `<div class="panel"><b>${esc(p.n)}</b> · Wins <button onclick="go({a:'w',i:${i},v:-1})">−</button> <b>${p.w}</b> <button onclick="go({a:'w',i:${i},v:1})">+</button> · Score <b style="font-size:26px">${x.sc}</b> · Override <input class="sc" type="number" step="any" placeholder="auto" value="${p.ov}" oninput="go({a:'ov',i:${i},v:this.value})"> ${once} ${eqUI}<div class="m">A ${f(st.A)} → B ${f(st.B)} → C ${f(st.C)} → D ${f(st.D)} → E ${f(st.E)} → F ${x.sc}</div><div class="row">${cardH(x.sv,{b:x.tg.includes(x.sv.id)?sel(x.sv.id):""})}${p.eq?cardH(C(p.eq),{b:x.tg.includes(p.eq)?sel(p.eq):""}):""}${p.inv.map(id=>cardH(C(id),{b:(x.tg.includes(id)?sel(id):"")+`<button class="d" onclick="go({a:'drop',i:${i},id:${id}})">Discard</button>`})).join("")}</div></div>`}).join("")+`<div class="panel c">${ONL==2?`<span class="m">Waiting for the host to finish the round…</span>`:`<button class="big" onclick="go({a:'fin'})">Finish round</button>`}</div>`},
+end:()=>`<div class="panel c"><h2>Game over!</h2>${G.P.slice().sort((a,b)=>b.w-a.w).map((p,k)=>`<div class="who" style="font-size:${k?22:38}px">${k?"":"🏆 "}${esc(p.n)}: ${p.w} wins</div>`).join("")}<p class="m">Tie? Compare the last round’s scores.</p><button class="big" onclick="ONL?location.reload():(ph='menu',render())">New game</button></div><div class="panel m">${G.log.map(esc).join("<br>")}</div>`,
+lobby:()=>`<div class="panel c"><h2>Room code</h2><div class="who">${esc(room)}</div><p class="m">Share this code. Others open this page and press Join.</p>${lobby.map((x,k)=>`<div>${k?"":"👑 "}${esc(x.n)}${k==me?" (you)":""}</div>`).join("")}${ONL==1?`<button class="big" onclick="goStart()">Start game</button>`:'<p class="m">Waiting for the host to start…</p>'}</div>`,
+cards:()=>`<div class="panel"><button onclick="ph=back;render()">← Back</button><p class="m">Card list (cards are fixed in this version so the score calculator stays accurate).</p></div>`+Object.keys(nm).map(t=>`<div class="panel"><h3 style="color:${col[t]}">${nm[t]} (${cards.filter(c=>c.t==t).length})</h3><div class="row">${cards.filter(c=>c.t==t).map(c=>cardH(c)).join("")}</div></div>`).join("")};
 let ONL=0,me=-1,peer,hc,conns=[],lobby=[],room="";
 const send=(c,m)=>{try{c.send(m)}catch(e){}},nm0=()=>(document.getElementById("on").value||"Player").trim().slice(0,16),lb=()=>conns.forEach(c=>send(c,{k:"l",L:lobby.map(x=>x.n),me:c.seat}));
 function deal(){dealHand()}
 function snap(i){return{k:"s",ph:ph=="cards"?back:ph,ui:{target:ui.target,limit:ui.limit},me:i,g:{...G,deck:G.deck.map(()=>0),disc:G.disc.map(()=>0),ed:G.ed.map(()=>0),hand:{[i]:G.hand[i]||[]},eh:{[i]:G.eh[i]||[]}}}}
 function host(){const n=nm0();room=Math.random().toString(36).slice(2,6).toUpperCase();peer=new Peer("ror2cg-"+room);
-peer.on("error",e=>alert("Network error: "+e.type));
-peer.on("open",()=>{ONL=1;me=0;lobby=[{n}];ph="lobby";render()});
-peer.on("connection",c=>{c.on("data",m=>hm(c,m));c.on("close",()=>{if(ph!="lobby")return;const k=lobby.findIndex(x=>x.c==c);if(k<1)return;lobby.splice(k,1);conns=conns.filter(o=>o!=c);conns.forEach(o=>{if(o.seat>k)o.seat--});lb();render()})})}
+ peer.on("error",e=>alert("Network error: "+e.type));
+ peer.on("open",()=>{ONL=1;me=0;lobby=[{n}];ph="lobby";render()});
+ peer.on("connection",c=>{c.on("data",m=>hm(c,m));c.on("close",()=>{if(ph!="lobby")return;const k=lobby.findIndex(x=>x.c==c);if(k<1)return;lobby.splice(k,1);conns=conns.filter(o=>o!=c);conns.forEach(o=>{if(o.seat>k)o.seat--});lb();render()})})}
 function hm(c,m){if(m.k=="j"){if(ph=="lobby"){if(lobby.length>=6)return send(c,{k:"x",m:"Room is full"});c.seat=lobby.length;lobby.push({n:m.n,c});conns.push(c);lb();render()}
-else{const s=G.P.findIndex(p=>p.n==m.n);if(s<1)return send(c,{k:"x",m:"Game already started. To rejoin, use your exact name."});c.seat=s;conns=conns.filter(o=>o.seat!=s);conns.push(c);render()}}
-else if(m.k=="a"&&c.seat!=null)ap(m.m,c.seat)}
+  else{const s=G.P.findIndex(p=>p.n==m.n);if(s<1)return send(c,{k:"x",m:"Game already started. To rejoin, use your exact name."});c.seat=s;conns=conns.filter(o=>o.seat!=s);conns.push(c);render()}}
+ else if(m.k=="a"&&c.seat!=null)ap(m.m,c.seat)}
 function join(){const n=nm0(),code=document.getElementById("rc").value.trim().toUpperCase();if(!code)return;room=code;peer=new Peer();
-peer.on("error",e=>alert("Network error: "+e.type));
-peer.on("open",()=>{const c=peer.connect("ror2cg-"+code,{reliable:true});
-c.on("open",()=>{hc=c;ONL=2;send(c,{k:"j",n})});
-c.on("data",m=>{if(m.k=="x")return alert(m.m);if(m.k=="l"){ph="lobby";lobby=m.L.map(n=>({n}));me=m.me}else{G=m.g;me=m.me;ui.target=m.ui.target;ui.limit=m.ui.limit;if(ph=="cards")back=m.ph;else ph=m.ph}render()});
-c.on("close",()=>{alert("Disconnected from host");location.reload()})})}
+ peer.on("error",e=>alert("Network error: "+e.type));
+ peer.on("open",()=>{const c=peer.connect("ror2cg-"+code,{reliable:true});
+  c.on("open",()=>{hc=c;ONL=2;send(c,{k:"j",n})});
+  c.on("data",m=>{if(m.k=="x")return alert(m.m);if(m.k=="l"){ph="lobby";lobby=m.L.map(n=>({n}));me=m.me}else{G=m.g;me=m.me;ui.target=m.ui.target;ui.limit=m.ui.limit;if(ph=="cards")back=m.ph;else ph=m.ph}render()});
+  c.on("close",()=>{alert("Disconnected from host");location.reload()})})}
 function goStart(){if(lobby.length<2)return alert("Need at least 2 players");ui.names=lobby.map(x=>x.n);ui.n=lobby.length;start()}
 function go(m){if(ONL==2)return send(hc,{k:"a",m});ap(m,ONL==1?0:-1)}
 function ap(m,w){const i=m.i,t=m.a,p=G.P[i];
-if(w>=0){if(["sel","ok","trim"].includes(t)){if(w!=G.i)return}else if(["w","ov","fin"].includes(t)?w!=0:(w!=0&&w!=i))return}
-if(t=="sel"){if(ph!="pick")return;const L=m.k=="i"?(G.hand[G.i]||[]):(G.eh[G.i]||[]);if(!L.includes(m.id))return;if(m.k=="i")G.pi=m.id;else G.pe=m.id;render()}
-else if(t=="ok"){if(ph!="pick")return
-;okPick()}
-else if(t=="trim"){if(ph!="pick"||!G.P[G.i].inv.includes(m.id))return;trim(m.id)}
-else if(t=="drop")drop(i,m.id);else if(t=="tg"){p.tg[m.id]=m.v;render()}else if(t=="ou"){p.ou=m.v;render()}else if(t=="eu"){if(m.v&&(!p.eq||p.cd>0))return;p.eu=m.v;render()}else if(t=="w"){p.w=Math.max(0,p.w+m.v);render()}else if(t=="ov")p.ov=m.v;else if(t=="fin"&&ph=="score")fin()}
-function render(){$.innerHTML=<div class="top"><b>Risk of Rain 2 Card Game${G&&ph!="menu"&&ph!="cards"&&ph!="end"?" · Round "+G.r+" · first to "+ui.target+" wins":""}</b><span>${ph!="cards"?📖 Cards :""}${ph!="menu"&&ph!="cards"?Quit:""}</span></div>+Vph;if(ONL==1&&G&&ph!="lobby")conns.forEach(c=>c.seat!=null&&send(c,snap(c.seat)))}
+ if(w>=0){if(["sel","ok","trim"].includes(t)){if(w!=G.i)return}else if(["w","ov","fin"].includes(t)?w!=0:(w!=0&&w!=i))return}
+ if(t=="sel"){if(ph!="pick")return;const L=m.k=="i"?(G.hand[G.i]||[]):(G.eh[G.i]||[]);if(!L.includes(m.id))return;if(m.k=="i")G.pi=m.id;else G.pe=m.id;render()}
+ else if(t=="ok"){if(ph!="pick")return;okPick()}
+ else if(t=="trim"){if(ph!="pick"||!G.P[G.i].inv.includes(m.id))return;trim(m.id)}
+ else if(t=="drop")drop(i,m.id);else if(t=="tg"){p.tg[m.id]=m.v;render()}else if(t=="ou"){p.ou=m.v;render()}else if(t=="eu"){if(m.v&&(!p.eq||p.cd>0))return;p.eu=m.v;render()}else if(t=="w"){p.w=Math.max(0,p.w+m.v);render()}else if(t=="ov")p.ov=m.v;else if(t=="fin"&&ph=="score")fin()}
+function render(){$.innerHTML=`<div class="top"><b>Risk of Rain 2 Card Game${G&&ph!="menu"&&ph!="cards"&&ph!="end"?" · Round "+G.r+" · first to "+ui.target+" wins":""}</b><span>${ph!="cards"?`<button onclick="back=ph;ph='cards';render()">📖 Cards</button> `:""}${ph!="menu"&&ph!="cards"?`<button onclick="if(confirm('Quit this game?')){ONL?location.reload():(ph='menu',render())}">Quit</button>`:""}</span></div>`+V[ph]();if(ONL==1&&G&&ph!="lobby")conns.forEach(c=>c.seat!=null&&send(c,snap(c.seat)))}
 render();
-
-<FollowUp>
-If you'd like a **tiny subtle indicator** (such as changing a single punctuation mark in the header when `qwertyuiop3` activates so you know it registered) or want to **tweak how heavily the advisor favors long-term scaling cards over immediate round wins**, let me know!
-</FollowUp>
+</script></body></html>
