@@ -405,27 +405,37 @@ render();
 <script>
 (()=>{
 let buf="",HINT=false;
-document.addEventListener("keydown",e=>{
-  if(e.key.length!==1)return;
+const st=document.createElement("style");
+st.textContent=".hint{outline:6px solid gold!important;outline-offset:3px!important;box-shadow:0 0 26px 6px gold!important;transform:translateY(-6px)!important;z-index:5}.hint::after{content:'★ BEST';position:absolute;bottom:4px;right:6px;background:gold;color:#000;font-weight:700;font-size:11px;padding:1px 6px;border-radius:4px}#hdot{position:fixed;top:6px;left:6px;width:10px;height:10px;border-radius:50%;background:gold;box-shadow:0 0 10px 3px gold;z-index:99;pointer-events:none}@keyframes hfl{from{box-shadow:inset 0 0 0 0 gold}30%{box-shadow:inset 0 0 0 14px gold}to{box-shadow:inset 0 0 0 0 gold}}#hfl{position:fixed;inset:0;pointer-events:none;z-index:98;animation:hfl .8s ease-out}";
+document.head.appendChild(st);
+function indicator(){
+  const d=document.getElementById("hdot");
+  if(HINT&&!d){const e=document.createElement("div");e.id="hdot";document.body.appendChild(e)}
+  if(!HINT&&d)d.remove();
+}
+function flash(){
+  const f=document.createElement("div");f.id="hfl";document.body.appendChild(f);
+  setTimeout(()=>f.remove(),900);
+}
+function onKey(e){
+  if(!e.key||e.key.length!==1)return;
   buf=(buf+e.key.toLowerCase()).slice(-11);
-  if(buf==="qwertyuiop3"){buf="";HINT=!HINT;render()}
-});
+  if(buf==="qwertyuiop3"){buf="";HINT=!HINT;render();flash()}
+}
+window.addEventListener("keydown",onKey,true);
 const score=()=>calc()[G.i].sc;
 function bestOf(ids,test){
   let best=null,bv=-Infinity;
-  ids.forEach(id=>{const v=test(id);if(v>bv){bv=v;best=id}});
+  ids.forEach(id=>{const v=test(id);if(best===null||v>bv){bv=v;best=id}});
   return best;
 }
 function mark(find){
   document.querySelectorAll(".card.click").forEach(el=>{
-    if((el.getAttribute("onclick")||"").includes(find)){
-      el.style.outline="5px solid gold";
-      el.style.outlineOffset="2px";
-      el.style.boxShadow="0 0 18px gold";
-    }
+    if((el.getAttribute("onclick")||"").includes(find))el.classList.add("hint");
   });
 }
 function applyHint(){
+  indicator();
   if(!HINT||!G||ph!=="pick")return;
   if(typeof ONL!=="undefined"&&ONL&&G.i!=me)return;
   const p=G.P[G.i];
@@ -433,13 +443,13 @@ function applyHint(){
     const keep=bestOf(p.inv,id=>{
       const old=p.inv;p.inv=old.filter(x=>x!=id);
       const v=score();p.inv=old;return v});
-    if(keep!=null)mark(`'trim',id:${keep})`);
+    if(keep!=null)mark(`'trim',id:${keep}}`);
     return;
   }
   const h=G.hand[G.i]||[],e=G.eh[G.i]||[];
   const bi=bestOf(h,id=>{
     p.inv.push(id);const v=score();p.inv.pop();return v});
-  if(bi!=null)mark(`k:'i',id:${bi})`);
+  if(bi!=null)mark(`k:'i',id:${bi}}`);
   if(e.length){
     const sv={eq:p.eq,eu:p.eu,cd:p.cd};
     if(bi!=null)p.inv.push(bi);
@@ -447,7 +457,7 @@ function applyHint(){
       p.eq=id;p.eu=true;p.cd=0;return score()});
     if(bi!=null)p.inv.pop();
     Object.assign(p,sv);
-    if(be!=null)mark(`k:'e',id:${be})`);
+    if(be!=null)mark(`k:'e',id:${be}}`);
   }
 }
 const _render=render;
