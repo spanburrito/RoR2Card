@@ -8,12 +8,14 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
 button,input,select,textarea{font:inherit;color:inherit;background:var(--pn);border:1px solid var(--bd);border-radius:6px;padding:6px 10px}
 button{cursor:pointer}button:hover{border-color:var(--fg)}
 .big{font-size:18px;padding:12px 22px;background:#2e8b3d;color:#fff;border:0;margin-top:10px}
+.big:disabled{opacity:.4;cursor:default}
 .top{display:flex;justify-content:space-between;align-items:center;padding:6px 2px}
 .panel{background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:12px;margin:8px 0}
 .c{text-align:center}.who{font-size:40px;font-weight:700;margin:10px}.m{color:var(--mu);font-size:13px}
 .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
 .card{width:180px;min-height:140px;border:3px solid var(--c);border-radius:8px;background:var(--pn);display:flex;flex-direction:column;position:relative;overflow:hidden}
 .card.click{cursor:pointer}.card.click:hover{transform:translateY(-4px);box-shadow:0 6px 14px #0005}
+.card.sel{outline:4px solid #2e8b3d;outline-offset:2px}
 .card h3{margin:0;font-size:14px;background:var(--c);color:#fff;padding:5px 24px 5px 6px}
 .card i{font-size:9px;letter-spacing:1px;color:var(--c);text-align:center;font-weight:700;margin-top:3px;font-style:normal}
 .card p{margin:4px 7px 7px;font-size:12.5px;line-height:1.3;flex:1}
@@ -143,23 +145,42 @@ Heart of the Pilgrim|H|[B] +60%. [E] All Opp −6%. Takes 2 slots.
 Seraph's Edict|H|[D] Score^1.2. [E] Opp with the most Items: −10%. Takes 2 slots.
 Ascendant Relic|H|[A] +3 per Item you hold. [C] ×1.2. Takes 2 slots.
 Vow of Radiance|H|One-shot. [C] ×3. [E] All Opp −10%. Takes 2 slots.`;
+/* Equipment: name|cooldown (rounds)|text. Not in the item deck; takes the equipment slot, not an inventory slot. */
+const Q=`Recycler|3|Use: [A] +7.
+Jade Elephant|4|Use: [B] +45%.
+Gorag's Opus|4|Use: [C] ×1.4.
+Fuel Array|2|Use: [A] +3. [B] +10%.
+Blast Shower|2|Use: Negate every − aimed at you this round.
+Preon Accumulator|4|Use: [E] All Opp −15%.
+Disposable Missile Launcher|2|Use: [E] Opp −12%. [A] +1.
+Volcanic Egg|3|Use: [D] Score^1.08.
+Eccentric Vase|3|Use: [F] +9 after everything.
+Radar Scanner|2|Use: [B] +3% per Item your Opps hold (total).
+Sawmarang|3|Use: [E] Opp −6. [A] +2.
+Super Massive Leech|3|Use: [E] Opp −8. [F] You +4.
+Milky Chrysalis|3|Use: [A] +2. [C] ×1.25.
+The Back-up|2|Use: [A] +1.5 per Item you hold.
+Foreign Fruit|2|Use: [B] +20%.`;
 
-const col={W:"#6b6b6b",G:"#2e8b3d",R:"#c62828",Y:"#c9a100",L:"#1f6fd1",V:"#7b2fb5",S:"#b8860b",H:"#e64980"};
-const nm={S:"SURVIVOR",W:"COMMON",G:"UNCOMMON",R:"LEGENDARY",Y:"BOSS",L:"LUNAR",V:"VOID",H:"HALLOWED"};
+const col={W:"#6b6b6b",G:"#2e8b3d",R:"#c62828",Y:"#c9a100",L:"#1f6fd1",V:"#7b2fb5",S:"#b8860b",H:"#e64980",Q:"#e8761a"};
+const nm={S:"SURVIVOR",W:"COMMON",G:"UNCOMMON",R:"LEGENDARY",Y:"BOSS",L:"LUNAR",V:"VOID",H:"HALLOWED",Q:"EQUIPMENT"};
 let cards=[],G=null,ph="menu",back="menu",ui={n:2,target:3,limit:4,names:["Player 1","Player 2","Player 3","Player 4","Player 5","Player 6"]};
 const $=document.getElementById("app");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const C=id=>cards.find(c=>c.id==id);
-function parse(){cards=[];let n=0;S.split("\n").forEach(l=>{const[a,b]=l.split("|");cards.push({id:++n,t:"S",n:a,x:b})});I.split("\n").forEach(l=>{const[a,t,x]=l.split("|");cards.push({id:++n,t,n:a,x})})}
+function parse(){cards=[];let n=0;S.split("\n").forEach(l=>{const[a,b]=l.split("|");cards.push({id:++n,t:"S",n:a,x:b})});I.split("\n").forEach(l=>{const[a,t,x]=l.split("|");cards.push({id:++n,t,n:a,x})});Q.split("\n").forEach(l=>{const[a,d,x]=l.split("|");cards.push({id:++n,t:"Q",n:a,cd:+d,x})})}
 parse();
 function shuf(a){a=a.slice();for(let i=a.length;i;){const j=Math.random()*i--|0;[a[i],a[j]]=[a[j],a[i]]}return a}
-function cardH(c,o={}){if(!c)return"";return `<div class="card ${o.click?"click":""}" style="--c:${col[c.t]}" ${o.click?`onclick="${o.click}"`:""}><h3>${esc(c.n)}</h3><i>${nm[c.t]}</i><p>${esc(c.x)}</p>${o.b||""}</div>`}
+function cardH(c,o={}){if(!c)return"";return `<div class="card ${o.click?"click":""} ${o.sel?"sel":""}" style="--c:${col[c.t]}" ${o.click?`onclick="${o.click}"`:""}><h3>${esc(c.n)}</h3><i>${nm[c.t]}${c.t=="Q"?" · COOLDOWN "+c.cd:""}</i><p>${esc(c.x)}</p>${o.b||""}</div>`}
 const row=ids=>`<div class="row">${ids.map(id=>cardH(C(id))).join("")||'<span class="m">none</span>'}</div>`;
 function draw(){if(!G.deck.length){G.deck=shuf(G.disc);G.disc=[]}return G.deck.pop()}
-function start(){const sv=shuf(cards.filter(c=>c.t=="S")),it=shuf(cards.filter(c=>c.t!="S").map(c=>c.id));
+function drawEq(){if(G.ed.length<3)G.ed=shuf(cards.filter(c=>c.t=="Q").map(c=>c.id));return[G.ed.pop(),G.ed.pop(),G.ed.pop()]}
+function dealHand(){const i=G.i;if(!(G.hand[i]||[]).length)G.hand[i]=[draw(),draw()].filter(Boolean);if(!G.P[i].eq&&!(G.eh[i]||[]).length)G.eh[i]=drawEq()}
+function start(){const sv=shuf(cards.filter(c=>c.t=="S")),it=shuf(cards.filter(c=>c.t!="S"&&c.t!="Q").map(c=>c.id));
  if(sv.length<ui.n||it.length<ui.n*3)return alert("Not enough cards for that many players.");
- G={lastWin:[],deck:it,disc:[],r:1,i:0,hand:{},log:[],P:ui.names.slice(0,ui.n).map((n,k)=>({n:n||"Player "+(k+1),s:sv[k].id,inv:[it.pop()],w:0,ov:"",tg:{},lost:false,ou:false,used:false}))};ph=ONL?"pick":"pass";ONL&&deal();render()}
-function keep(id){const h=G.hand[G.i];G.P[G.i].inv.push(id);G.disc.push(h.find(x=>x!=id));G.hand[G.i]=[];adv()}
+ G={lastWin:[],deck:it,disc:[],ed:[],eh:{},pi:null,pe:null,r:1,i:0,hand:{},log:[],P:ui.names.slice(0,ui.n).map((n,k)=>({n:n||"Player "+(k+1),s:sv[k].id,inv:[it.pop()],eq:null,cd:0,eu:false,w:0,ov:"",tg:{},lost:false,ou:false,used:false}))};ph=ONL?"pick":"pass";ONL&&deal();render()}
+function okPick(){const p=G.P[G.i],h=G.hand[G.i]||[],e=G.eh[G.i]||[];if(!h.includes(G.pi)||(e.length&&!e.includes(G.pe)))return;
+ p.inv.push(G.pi);const o=h.find(x=>x!=G.pi);o&&G.disc.push(o);G.hand[G.i]=[];if(e.length){p.eq=G.pe;G.eh[G.i]=[]}G.pi=G.pe=null;adv()}
 function trim(id){const p=G.P[G.i];p.inv=p.inv.filter(x=>x!=id);G.disc.push(id);adv()}
 function adv(){const p=G.P[G.i];if(slots(p)>lim(p)){render();return}G.i++;ph=G.i>=G.P.length?"score":ONL?"pick":"pass";if(ph=="pick"&&ONL)deal();render()}
 function drop(i,id){const p=G.P[i];p.inv=p.inv.filter(x=>x!=id);G.disc.push(id);render()}
@@ -255,6 +276,22 @@ const E={
 "Seraph's Edict":x=>{x.D(1.2);x.H({t:"most",pct:10})},
 "Ascendant Relic":x=>{x.A(3*x.N);x.C(1.2)},
 "Vow of Radiance":x=>{x.C(3);x.H({t:"all",pct:10})}};
+const EQF={
+"Recycler":x=>x.A(7),
+"Jade Elephant":x=>x.B(45),
+"Gorag's Opus":x=>x.C(1.4),
+"Fuel Array":x=>{x.A(3);x.B(10)},
+"Blast Shower":x=>{x.eqNeg=true},
+"Preon Accumulator":x=>x.H({t:"all",pct:15}),
+"Disposable Missile Launcher":x=>{x.H({t:"one",pct:12});x.A(1)},
+"Volcanic Egg":x=>x.D(1.08),
+"Eccentric Vase":x=>x.F("+",9),
+"Radar Scanner":x=>x.B(3*x.oppItems),
+"Sawmarang":x=>{x.H({t:"one",flat:6});x.A(2)},
+"Super Massive Leech":x=>{x.H({t:"one",flat:8});x.F("+",4)},
+"Milky Chrysalis":x=>{x.A(2);x.C(1.25)},
+"The Back-up":x=>x.A(1.5*x.N),
+"Foreign Fruit":x=>x.B(20)};
 const ES={
 "Huntress":x=>x.H({t:"win",pct:10}),
 "Bandit":x=>x.N<x.minOpp&&x.C(1.3),
@@ -278,10 +315,11 @@ const add=(x,s,v,c)=>x.ent.push({s,v,c}),sm=(x,s)=>x.ent.filter(e=>e.s==s).reduc
 function calc(){const P=G.P,n=P.length;
  const X=P.map((p,i)=>{const items=p.inv.map(C).filter(Boolean),sv=C(p.s),sn=sv?sv.n:"",names=new Set(items.map(c=>c.n)),b={W:0,G:0,R:0,Y:0,L:0,V:0,H:0};
   items.forEach(c=>b[c.t]++);const k={...b};if(sn=="Void Fiend")k.G+=k.W;if(names.has("Benthic Bloom"))k.R+=k.G;if(sn=="Heretic")k.L*=2;
-  const x={...k,i,items,sv,sn,names,b,L0:b.L,N:items.length,rd:G.r,O:n-1,lost:p.lost,w:p.w,ou:p.ou&&!p.used,T:Object.values(k).filter(v=>v>0).length,os:items.filter(c=>OS.has(c.n)).length,ent:[],hits:[],used:[],cur:null};
+  const x={...k,i,items,sv,sn,names,b,L0:b.L,N:items.length,rd:G.r,O:n-1,lost:p.lost,w:p.w,ou:p.ou&&!p.used,eq:C(p.eq),eu:!!(p.eq&&p.eu&&p.cd==0),T:Object.values(k).filter(v=>v>0).length,os:items.filter(c=>OS.has(c.n)).length,ent:[],hits:[],used:[],cur:null};
   x.A=v=>add(x,"A",v,x.cur);x.B=v=>add(x,"B",v,x.cur);x.C=v=>add(x,"C",v,x.cur);x.D=v=>add(x,"D",v,x.cur);x.F=(m,v)=>add(x,"F"+m,v,x.cur);x.H=h=>x.hits.push({...h,c:x.cur,f:i});return x});
  X.forEach(x=>{const o=X.filter(y=>y!==x);x.minOpp=Math.min(...o.map(y=>y.N));x.oppItems=o.reduce((a,y)=>a+y.N,0);x.bigger=o.filter(y=>y.N>x.N).length;x.maxOppW=Math.max(...o.map(y=>y.w));
-  if(x.sv){x.cur=x.sv;ES[x.sn]&&ES[x.sn](x)}x.items.forEach(c=>{x.cur=c;E[c.n]&&E[c.n](x)})});
+  if(x.sv){x.cur=x.sv;ES[x.sn]&&ES[x.sn](x)}x.items.forEach(c=>{x.cur=c;E[c.n]&&E[c.n](x)});
+  if(x.eu&&x.eq){x.cur=x.eq;EQF[x.eq.n]&&EQF[x.eq.n](x)}});
  const tgts=(h)=>{const y=X[h.f],o=X.filter(z=>z!==y);
   if(h.t=="all")return o.map(z=>z.i);
   if(h.t=="most"||h.t=="mostRY"){const v=z=>h.t=="most"?z.N:z.b.R+z.b.Y,m=Math.max(...o.map(v));return o.filter(z=>v(z)==m).map(z=>z.i)}
@@ -299,13 +337,13 @@ function calc(){const P=G.P,n=P.length;
   const big=()=>{let b=-1;x.ent.forEach((e,j)=>{if(e.s=="C"&&e.v>1&&(b<0||e.v>x.ent[b].v))b=j});return b};
   inH.forEach(h=>{if(h.cm=="drop"||h.cm=="half"){const j=big();if(j>=0){if(h.cm=="drop")x.ent.splice(j,1);else x.ent[j]={...x.ent[j],v:1+(x.ent[j].v-1)/2}}}});
   if(X.some(y=>y!==x&&y.names.has("Genesis Loop")))x.ent=x.ent.filter(e=>!(e.s=="C"&&e.v>1&&e.v<=1.3+1e-9));
-  if(x.sn=="Commando")add(x,"A",1.5*new Set(x.ent.filter(e=>e.s=="A"&&e.c.t!="S").map(e=>e.c.id)).size,x.sv);
-  if(x.sn=="Railgunner"&&x.ent.some(e=>e.s=="C"&&e.c.t!="S"&&e.v>=1.5))add(x,"C",1.25,x.sv);
+  if(x.sn=="Commando")add(x,"A",1.5*new Set(x.ent.filter(e=>e.s=="A"&&e.c.t!="S"&&e.c.t!="Q").map(e=>e.c.id)).size,x.sv);
+  if(x.sn=="Railgunner"&&x.ent.some(e=>e.s=="C"&&e.c.t!="S"&&e.c.t!="Q"&&e.v>=1.5))add(x,"C",1.25,x.sv);
   x.st={};let v=10+sm(x,"A");x.st.A=v;v*=1+sm(x,"B")/100;x.st.B=v;v*=pr(x,"C");x.st.C=v;v=Math.pow(v,pr(x,"D"));x.st.D=v;x.v=v});
  const pens=X.map(()=>[]);
  HA.forEach(({h,T})=>T.forEach(j=>{const q=X[j];if(h.cond=="3tiers"&&q.T<3)return;if(h.give)add(q,"F+",h.give,h.c);
   if(h.flat||h.pct)pens[j].push({flat:h.flat||0,pct:(typeof h.pct=="function"?h.pct(q):h.pct)||0,u:X[h.f].names.has("Shatterspleen")})}));
- X.forEach((q,j)=>{const sh=[],sc=[];q.items.forEach(c=>{if(c.n=="Aegis")sh.push({n:Infinity});if(c.n=="Safer Spaces")sh.push({n:1});if(CONS.has(c.n))sc.push({n:c.n=="Pluripotent Larva"?Infinity:1,id:c.id})});if(q.sn=="Enforcer")sh.push({n:1});
+ X.forEach((q,j)=>{const sh=[],sc=[];q.items.forEach(c=>{if(c.n=="Aegis")sh.push({n:Infinity});if(c.n=="Safer Spaces")sh.push({n:1});if(CONS.has(c.n))sc.push({n:c.n=="Pluripotent Larva"?Infinity:1,id:c.id})});if(q.sn=="Enforcer")sh.push({n:1});if(q.eqNeg)sh.push({n:Infinity});
   const sl=[...sh,...sc],st=p=>p.flat+p.pct*q.v/100;
   const kept=pens[j].sort((a,b)=>st(b)-st(a)).filter(p=>{if(p.u)return true;const s=sl.find(z=>z.n>0);if(!s)return true;s.n--;if(s.id&&!q.used.includes(s.id))q.used.push(s.id);return false});
   let v=Math.max(0,q.v-kept.reduce((a,p)=>a+p.flat,0));v*=1-Math.min(75,kept.reduce((a,p)=>a+p.pct,0))/100;q.st.E=v;
@@ -316,27 +354,30 @@ function fin(){const R=calc(),sc=G.P.map((p,i)=>p.ov!==""&&!isNaN(+p.ov)?+p.ov:R
  const wq=w.filter(i=>R[i].names.has("Wax Quail"));if(wq.length&&wq.length<w.length&&w.every(i=>sc[i]==m))w=wq;
  w.forEach(i=>{G.P[i].w+=R[i].names.has("Mercurial Rachis")?2:1});
  G.log.push(`Round ${G.r}: ${w.map(i=>G.P[i].n).join(" & ")} won — ${G.P.map((p,i)=>p.n+" "+sc[i]).join(", ")}`);
- G.P.forEach((p,i)=>{p.lost=!w.includes(i);p.ov="";p.tg={};if(p.ou)p.used=true;p.ou=false;const g=R[i].names.has("Gesture of the Drowned");
+ G.P.forEach((p,i)=>{p.lost=!w.includes(i);p.ov="";p.tg={};if(p.ou)p.used=true;p.ou=false;
+  if(R[i].eu)p.cd=C(p.eq).cd;else if(p.cd>0)p.cd--;p.eu=false;
+  const g=R[i].names.has("Gesture of the Drowned");
   const rm=p.inv.filter(id=>{const c=C(id);return c&&((!g&&OS.has(c.n))||R[i].used.includes(id))});p.inv=p.inv.filter(id=>!rm.includes(id));G.disc.push(...rm)});
  G.lastWin=w;const mx=Math.max(...G.P.map(p=>p.w));if(mx>=ui.target&&G.P.filter(p=>p.w==mx).length==1)ph="end";else{G.r++;G.i=0;G.hand={};ph=ONL?"pick":"pass";ONL&&deal()}render()}
 const V={
 menu:()=>`<div class="panel"><h2>New game</h2>Players <select onchange="ui.n=+this.value;render()">${[2,3,4,5,6].map(n=>`<option ${n==ui.n?"selected":""}>${n}</option>`).join("")}</select> First to <input type="number" min="1" value="${ui.target}" style="width:60px" onchange="ui.target=+this.value"> wins Inventory limit <input type="number" min="1" value="${ui.limit}" style="width:60px" onchange="ui.limit=+this.value"><div class="row">${Array.from({length:ui.n},(_,k)=>`<input value="${esc(ui.names[k])}" oninput="ui.names[${k}]=this.value">`).join("")}</div><button class="big" onclick="start()">Deal &amp; start</button></div>
 <div class="panel"><h2>Play online</h2>Your name <input id="on" value="Player" style="width:120px"> <button onclick="host()">Host game</button> <input id="rc" placeholder="Room code" style="width:110px;text-transform:uppercase"> <button onclick="join()">Join</button><div class="m">Peer-to-peer over WebRTC. The host's tab runs the game, so keep it open. Uses the "first to" and inventory settings above.</div></div>
-<div class="panel m"><b>How it works:</b> Each player gets a random Survivor and 1 starting Item. Each round, players take turns in hotseat: draw 2 Items, keep 1 (the other is discarded). Then everyone calculates their score by hand and enters it; the highest score wins the round. Scoring: [A] add, [B] % pool, [C] multipliers, [D] powers, [E] opponent penalties, [F] final. Scores are calculated automatically (you can override any score). <b>Hallowed</b> items are very strong but take 2 inventory slots.</div>`,
-pass:()=>{const p=G.P[G.i];return `<div class="panel c"><h2>Pass the device to</h2><div class="who">${esc(p.n)}</div><p class="m">Everyone else look away!</p><button class="big" onclick="G.hand[G.i]=G.hand[G.i]&&G.hand[G.i].length?G.hand[G.i]:[draw(),draw()];ph='pick';render()">I’m ${esc(p.n)} — show my cards</button></div>`},
-pick:()=>{if(ONL&&G.i!=me)return `<div class="panel c"><h2>Waiting for ${esc(G.P[G.i].n)} to choose…</h2></div>`+G.P.map(p=>`<div class="panel"><b>${esc(p.n)}</b> · Wins ${p.w}<div class="row">${cardH(C(p.s))}${p.inv.map(id=>cardH(C(id))).join("")}</div></div>`).join("");const p=G.P[G.i],h=G.hand[G.i]||[],over=slots(p)>lim(p);
- return `<div class="panel"><h2>${esc(p.n)}</h2><div class="row">${cardH(C(p.s))}</div>`+(over?`<h3>Over your limit of ${lim(p)}! Tap an Item to discard it</h3><div class="row">${p.inv.map(id=>cardH(C(id),{click:`go({a:'trim',id:${id}})`})).join("")}</div>`:`<h3>Your Items</h3>${row(p.inv)}<h3>Choose 1 to keep</h3><div class="row">${h.map(id=>cardH(C(id),{click:`go({a:'keep',id:${id}})`})).join("")}</div>`)+`</div>`},
-score:()=>{const R=calc(),f=v=>Math.round(v*100)/100;return `<div class="panel"><h2>Round ${G.r}: scores</h2><p class="m">Scores are calculated automatically from every card. Pick targets for “Opp” effects, tick once-per-game abilities, or type an override if a score looks wrong. One-shots are discarded automatically when you finish the round. Draw effects (Fuel Cell, Lepton Daisy), Chef and Drifter are still manual. Deck: ${G.deck.length}, discard: ${G.disc.length}.</p></div>`+G.P.map((p,i)=>{const x=R[i],st=x.st;
+<div class="panel m"><b>How it works:</b> Each player gets a random Survivor and 1 starting Item. On your first turn you also choose 1 of 3 <b style="color:#e8761a">Equipment</b> cards, which is yours for the rest of the game and doesn't use an inventory slot. Each round, players take turns in hotseat: draw 2 Items, keep 1 (the other is discarded). Then everyone calculates their score by hand and enters it; the highest score wins the round. Scoring: [A] add, [B] % pool, [C] multipliers, [D] powers, [E] opponent penalties, [F] final. Scores are calculated automatically (you can override any score). <b>Hallowed</b> items are very strong but take 2 inventory slots. <b>Equipment</b> is a spendable action: tick it on the scoring screen to use it that round, then it recharges for its cooldown in rounds.</div>`,
+pass:()=>{const p=G.P[G.i];return `<div class="panel c"><h2>Pass the device to</h2><div class="who">${esc(p.n)}</div><p class="m">Everyone else look away!</p><button class="big" onclick="dealHand();ph='pick';render()">I’m ${esc(p.n)} — show my cards</button></div>`},
+pick:()=>{if(ONL&&G.i!=me)return `<div class="panel c"><h2>Waiting for ${esc(G.P[G.i].n)} to choose…</h2></div>`+G.P.map(p=>`<div class="panel"><b>${esc(p.n)}</b> · Wins ${p.w}<div class="row">${cardH(C(p.s))}${p.eq?cardH(C(p.eq)):""}${p.inv.map(id=>cardH(C(id))).join("")}</div></div>`).join("");const p=G.P[G.i],h=G.hand[G.i]||[],e=G.eh[G.i]||[],over=slots(p)>lim(p),ready=h.includes(G.pi)&&(!e.length||e.includes(G.pe));
+ return `<div class="panel"><h2>${esc(p.n)}</h2><div class="row">${cardH(C(p.s))}</div>`+(over?`<h3>Over your limit of ${lim(p)}! Tap an Item to discard it</h3><div class="row">${p.inv.map(id=>cardH(C(id),{click:`go({a:'trim',id:${id}})`})).join("")}</div>`:`<h3>Your Items</h3>${row(p.inv)}${p.eq?`<h3>Your Equipment</h3>${row([p.eq])}`:""}<h3>Choose 1 Item to keep</h3><div class="row">${h.map(id=>cardH(C(id),{click:`go({a:'sel',k:'i',id:${id}})`,sel:G.pi==id})).join("")}</div>${e.length?`<h3>Choose 1 Equipment (yours for the rest of the game)</h3><div class="row">${e.map(id=>cardH(C(id),{click:`go({a:'sel',k:'e',id:${id}})`,sel:G.pe==id})).join("")}</div>`:""}<button class="big" ${ready?"":"disabled"} onclick="go({a:'ok'})">Confirm</button>`)+`</div>`},
+score:()=>{const R=calc(),f=v=>Math.round(v*100)/100;return `<div class="panel"><h2>Round ${G.r}: scores</h2><p class="m">Scores are calculated automatically from every card. Pick targets for “Opp” effects, tick once-per-game abilities or Equipment, or type an override if a score looks wrong. One-shots are discarded automatically when you finish the round. Equipment you use starts its cooldown when the round ends. Draw effects (Fuel Cell, Lepton Daisy), Chef and Drifter are still manual. Deck: ${G.deck.length}, discard: ${G.disc.length}.</p></div>`+G.P.map((p,i)=>{const x=R[i],st=x.st;
  const sel=id=>`<select onchange="go({a:'tg',i:${i},id:${id},v:+this.value})">`+G.P.map((q,j)=>j==i?"":`<option value="${j}" ${(p.tg[id]!=null?p.tg[id]==j:j==(i+1)%G.P.length)?"selected":""}>→ ${esc(q.n)}</option>`).join("")+`</select>`;
  const once=["MUL-T","Mercenary","Captain"].includes(x.sn)&&!p.used?`<label>🔘 <input type="checkbox" ${p.ou?"checked":""} onchange="go({a:'ou',i:${i},v:this.checked})"> use once-per-game ability</label>`:"";
- return `<div class="panel"><b>${esc(p.n)}</b> · Wins <button onclick="go({a:'w',i:${i},v:-1})">−</button> <b>${p.w}</b> <button onclick="go({a:'w',i:${i},v:1})">+</button> · Score <b style="font-size:26px">${x.sc}</b> · Override <input class="sc" type="number" step="any" placeholder="auto" value="${p.ov}" oninput="go({a:'ov',i:${i},v:this.value})"> ${once}<div class="m">A ${f(st.A)} → B ${f(st.B)} → C ${f(st.C)} → D ${f(st.D)} → E ${f(st.E)} → F ${x.sc}</div><div class="row">${cardH(x.sv,{b:x.tg.includes(x.sv.id)?sel(x.sv.id):""})}${p.inv.map(id=>cardH(C(id),{b:(x.tg.includes(id)?sel(id):"")+`<button class="d" onclick="go({a:'drop',i:${i},id:${id}})">Discard</button>`})).join("")}</div></div>`}).join("")+`<div class="panel c">${ONL==2?`<span class="m">Waiting for the host to finish the round…</span>`:`<button class="big" onclick="go({a:'fin'})">Finish round</button>`}</div>`},
+ const eqUI=p.eq?`<label>⚙️ <input type="checkbox" ${p.eu&&p.cd==0?"checked":""} ${p.cd>0?"disabled":""} onchange="go({a:'eu',i:${i},v:this.checked})"> use ${esc(C(p.eq).n)} ${p.cd>0?`(recharging: ${p.cd} round${p.cd>1?"s":""} left)`:"(ready)"}</label>`:"";
+ return `<div class="panel"><b>${esc(p.n)}</b> · Wins <button onclick="go({a:'w',i:${i},v:-1})">−</button> <b>${p.w}</b> <button onclick="go({a:'w',i:${i},v:1})">+</button> · Score <b style="font-size:26px">${x.sc}</b> · Override <input class="sc" type="number" step="any" placeholder="auto" value="${p.ov}" oninput="go({a:'ov',i:${i},v:this.value})"> ${once} ${eqUI}<div class="m">A ${f(st.A)} → B ${f(st.B)} → C ${f(st.C)} → D ${f(st.D)} → E ${f(st.E)} → F ${x.sc}</div><div class="row">${cardH(x.sv,{b:x.tg.includes(x.sv.id)?sel(x.sv.id):""})}${p.eq?cardH(C(p.eq),{b:x.tg.includes(p.eq)?sel(p.eq):""}):""}${p.inv.map(id=>cardH(C(id),{b:(x.tg.includes(id)?sel(id):"")+`<button class="d" onclick="go({a:'drop',i:${i},id:${id}})">Discard</button>`})).join("")}</div></div>`}).join("")+`<div class="panel c">${ONL==2?`<span class="m">Waiting for the host to finish the round…</span>`:`<button class="big" onclick="go({a:'fin'})">Finish round</button>`}</div>`},
 end:()=>`<div class="panel c"><h2>Game over!</h2>${G.P.slice().sort((a,b)=>b.w-a.w).map((p,k)=>`<div class="who" style="font-size:${k?22:38}px">${k?"":"🏆 "}${esc(p.n)}: ${p.w} wins</div>`).join("")}<p class="m">Tie? Compare the last round’s scores.</p><button class="big" onclick="ONL?location.reload():(ph='menu',render())">New game</button></div><div class="panel m">${G.log.map(esc).join("<br>")}</div>`,
 lobby:()=>`<div class="panel c"><h2>Room code</h2><div class="who">${esc(room)}</div><p class="m">Share this code. Others open this page and press Join.</p>${lobby.map((x,k)=>`<div>${k?"":"👑 "}${esc(x.n)}${k==me?" (you)":""}</div>`).join("")}${ONL==1?`<button class="big" onclick="goStart()">Start game</button>`:'<p class="m">Waiting for the host to start…</p>'}</div>`,
 cards:()=>`<div class="panel"><button onclick="ph=back;render()">← Back</button><p class="m">Card list (cards are fixed in this version so the score calculator stays accurate).</p></div>`+Object.keys(nm).map(t=>`<div class="panel"><h3 style="color:${col[t]}">${nm[t]} (${cards.filter(c=>c.t==t).length})</h3><div class="row">${cards.filter(c=>c.t==t).map(c=>cardH(c)).join("")}</div></div>`).join("")};
 let ONL=0,me=-1,peer,hc,conns=[],lobby=[],room="";
 const send=(c,m)=>{try{c.send(m)}catch(e){}},nm0=()=>(document.getElementById("on").value||"Player").trim().slice(0,16),lb=()=>conns.forEach(c=>send(c,{k:"l",L:lobby.map(x=>x.n),me:c.seat}));
-function deal(){if(!(G.hand[G.i]||[]).length)G.hand[G.i]=[draw(),draw()].filter(Boolean)}
-function snap(i){return{k:"s",ph:ph=="cards"?back:ph,ui:{target:ui.target,limit:ui.limit},me:i,g:{...G,deck:G.deck.map(()=>0),disc:G.disc.map(()=>0),hand:{[i]:G.hand[i]||[]}}}}
+function deal(){dealHand()}
+function snap(i){return{k:"s",ph:ph=="cards"?back:ph,ui:{target:ui.target,limit:ui.limit},me:i,g:{...G,deck:G.deck.map(()=>0),disc:G.disc.map(()=>0),ed:G.ed.map(()=>0),hand:{[i]:G.hand[i]||[]},eh:{[i]:G.eh[i]||[]}}}}
 function host(){const n=nm0();room=Math.random().toString(36).slice(2,6).toUpperCase();peer=new Peer("ror2cg-"+room);
  peer.on("error",e=>alert("Network error: "+e.type));
  peer.on("open",()=>{ONL=1;me=0;lobby=[{n}];ph="lobby";render()});
@@ -353,9 +394,11 @@ function join(){const n=nm0(),code=document.getElementById("rc").value.trim().to
 function goStart(){if(lobby.length<2)return alert("Need at least 2 players");ui.names=lobby.map(x=>x.n);ui.n=lobby.length;start()}
 function go(m){if(ONL==2)return send(hc,{k:"a",m});ap(m,ONL==1?0:-1)}
 function ap(m,w){const i=m.i,t=m.a,p=G.P[i];
- if(w>=0){if(t=="keep"||t=="trim"){if(w!=G.i)return}else if(["w","ov","fin"].includes(t)?w!=0:(w!=0&&w!=i))return}
- if(t=="keep"||t=="trim"){if(ph!="pick")return;if(t=="keep"?!(G.hand[G.i]||[]).includes(m.id):!G.P[G.i].inv.includes(m.id))return}
- if(t=="keep")keep(m.id);else if(t=="trim")trim(m.id);else if(t=="drop")drop(i,m.id);else if(t=="tg"){p.tg[m.id]=m.v;render()}else if(t=="ou"){p.ou=m.v;render()}else if(t=="w"){p.w=Math.max(0,p.w+m.v);render()}else if(t=="ov")p.ov=m.v;else if(t=="fin"&&ph=="score")fin()}
+ if(w>=0){if(["sel","ok","trim"].includes(t)){if(w!=G.i)return}else if(["w","ov","fin"].includes(t)?w!=0:(w!=0&&w!=i))return}
+ if(t=="sel"){if(ph!="pick")return;const L=m.k=="i"?(G.hand[G.i]||[]):(G.eh[G.i]||[]);if(!L.includes(m.id))return;if(m.k=="i")G.pi=m.id;else G.pe=m.id;render()}
+ else if(t=="ok"){if(ph!="pick")return;okPick()}
+ else if(t=="trim"){if(ph!="pick"||!G.P[G.i].inv.includes(m.id))return;trim(m.id)}
+ else if(t=="drop")drop(i,m.id);else if(t=="tg"){p.tg[m.id]=m.v;render()}else if(t=="ou"){p.ou=m.v;render()}else if(t=="eu"){if(m.v&&(!p.eq||p.cd>0))return;p.eu=m.v;render()}else if(t=="w"){p.w=Math.max(0,p.w+m.v);render()}else if(t=="ov")p.ov=m.v;else if(t=="fin"&&ph=="score")fin()}
 function render(){$.innerHTML=`<div class="top"><b>Risk of Rain 2 Card Game${G&&ph!="menu"&&ph!="cards"&&ph!="end"?" · Round "+G.r+" · first to "+ui.target+" wins":""}</b><span>${ph!="cards"?`<button onclick="back=ph;ph='cards';render()">📖 Cards</button> `:""}${ph!="menu"&&ph!="cards"?`<button onclick="if(confirm('Quit this game?')){ONL?location.reload():(ph='menu',render())}">Quit</button>`:""}</span></div>`+V[ph]();if(ONL==1&&G&&ph!="lobby")conns.forEach(c=>c.seat!=null&&send(c,snap(c.seat)))}
 render();
 </script></body></html>
