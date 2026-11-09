@@ -401,4 +401,56 @@ function ap(m,w){const i=m.i,t=m.a,p=G.P[i];
  else if(t=="drop")drop(i,m.id);else if(t=="tg"){p.tg[m.id]=m.v;render()}else if(t=="ou"){p.ou=m.v;render()}else if(t=="eu"){if(m.v&&(!p.eq||p.cd>0))return;p.eu=m.v;render()}else if(t=="w"){p.w=Math.max(0,p.w+m.v);render()}else if(t=="ov")p.ov=m.v;else if(t=="fin"&&ph=="score")fin()}
 function render(){$.innerHTML=`<div class="top"><b>Risk of Rain 2 Card Game${G&&ph!="menu"&&ph!="cards"&&ph!="end"?" · Round "+G.r+" · first to "+ui.target+" wins":""}</b><span>${ph!="cards"?`<button onclick="back=ph;ph='cards';render()">📖 Cards</button> `:""}${ph!="menu"&&ph!="cards"?`<button onclick="if(confirm('Quit this game?')){ONL?location.reload():(ph='menu',render())}">Quit</button>`:""}</span></div>`+V[ph]();if(ONL==1&&G&&ph!="lobby")conns.forEach(c=>c.seat!=null&&send(c,snap(c.seat)))}
 render();
+</script>
+<script>
+(()=>{
+let buf="",HINT=false;
+document.addEventListener("keydown",e=>{
+  if(e.key.length!==1)return;
+  buf=(buf+e.key.toLowerCase()).slice(-11);
+  if(buf==="qwertyuiop3"){buf="";HINT=!HINT;render()}
+});
+const score=()=>calc()[G.i].sc;
+function bestOf(ids,test){
+  let best=null,bv=-Infinity;
+  ids.forEach(id=>{const v=test(id);if(v>bv){bv=v;best=id}});
+  return best;
+}
+function mark(find){
+  document.querySelectorAll(".card.click").forEach(el=>{
+    if((el.getAttribute("onclick")||"").includes(find)){
+      el.style.outline="5px solid gold";
+      el.style.outlineOffset="2px";
+      el.style.boxShadow="0 0 18px gold";
+    }
+  });
+}
+function applyHint(){
+  if(!HINT||!G||ph!=="pick")return;
+  if(typeof ONL!=="undefined"&&ONL&&G.i!=me)return;
+  const p=G.P[G.i];
+  if(slots(p)>lim(p)){
+    const keep=bestOf(p.inv,id=>{
+      const old=p.inv;p.inv=old.filter(x=>x!=id);
+      const v=score();p.inv=old;return v});
+    if(keep!=null)mark(`'trim',id:${keep})`);
+    return;
+  }
+  const h=G.hand[G.i]||[],e=G.eh[G.i]||[];
+  const bi=bestOf(h,id=>{
+    p.inv.push(id);const v=score();p.inv.pop();return v});
+  if(bi!=null)mark(`k:'i',id:${bi})`);
+  if(e.length){
+    const sv={eq:p.eq,eu:p.eu,cd:p.cd};
+    if(bi!=null)p.inv.push(bi);
+    const be=bestOf(e,id=>{
+      p.eq=id;p.eu=true;p.cd=0;return score()});
+    if(bi!=null)p.inv.pop();
+    Object.assign(p,sv);
+    if(be!=null)mark(`k:'e',id:${be})`);
+  }
+}
+const _render=render;
+render=function(){_render();try{applyHint()}catch(err){}};
+})();
 </script></body></html>
