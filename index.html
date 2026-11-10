@@ -463,4 +463,103 @@ function applyHint(){
 const _render=render;
 render=function(){_render();try{applyHint()}catch(err){}};
 })();
+</script><script>
+(()=>{
+let buf="",FUT=false,cache={};
+const st=document.createElement("style");
+st.textContent=".hintb{outline:6px solid #2f8bff!important;outline-offset:3px!important;box-shadow:0 0 26px 6px #2f8bff!important;transform:translateY(-6px)!important;z-index:6}.hintb::after{content:'★ FUTURE';position:absolute;bottom:4px;right:6px;background:#2f8bff;color:#fff;font-weight:700;font-size:11px;padding:1px 6px;border-radius:4px}#bdot{position:fixed;top:6px;left:22px;width:10px;height:10px;border-radius:50%;background:#2f8bff;box-shadow:0 0 10px 3px #2f8bff;z-index:99;pointer-events:none}@keyframes bfl{from{box-shadow:inset 0 0 0 0 #2f8bff}30%{box-shadow:inset 0 0 0 14px #2f8bff}to{box-shadow:inset 0 0 0 0 #2f8bff}}#bfl{position:fixed;inset:0;pointer-events:none;z-index:98;animation:bfl .8s ease-out}";
+document.head.appendChild(st);
+function indicator(){
+  const d=document.getElementById("bdot");
+  if(FUT&&!d){const e=document.createElement("div");e.id="bdot";document.body.appendChild(e)}
+  if(!FUT&&d)d.remove();
+}
+function flash(){const f=document.createElement("div");f.id="bfl";document.body.appendChild(f);setTimeout(()=>f.remove(),900)}
+window.addEventListener("keydown",e=>{
+  if(!e.key||e.key.length!==1)return;
+  buf=(buf+e.key.toLowerCase()).slice(-11);
+  if(buf.endsWith("cookie")){buf="";FUT=!FUT;cache={};render();flash()}
+},true);
+const HZ=3,SAMPLES=14;
+const score=()=>calc();
+function pool(){
+  const held=new Set();G.P.forEach(p=>p.inv.forEach(id=>held.add(id)));
+  return cards.filter(c=>c.t!="S"&&c.t!="Q"&&!held.has(c.id)).map(c=>c.id);
+}
+function margin(i){
+  const R=calc();let o=-Infinity;R.forEach((x,j)=>{if(j!==i&&x.sc>o)o=x.sc});
+  return R[i].sc+(R[i].sc-o);
+}
+function shrink(p){
+  while(slots(p)>lim(p)&&p.inv.length>1){
+    let b=null,bv=-Infinity;
+    p.inv.slice().forEach(id=>{const o=p.inv;p.inv=o.filter(x=>x!=id);const v=margin(G.P.indexOf(p));p.inv=o;if(b===null||v>bv){bv=v;b=id}});
+    p.inv=p.inv.filter(x=>x!=b);
+  }
+}
+function project(i,inv0,eq0,cd0,rest){
+  const p=G.P[i],keep={inv:p.inv,eq:p.eq,eu:p.eu,cd:p.cd,lost:p.lost,r:G.r,pl:rest};
+  const r0=G.r,P=rest.slice();let total=0;
+  for(let s=0;s<SAMPLES;s++){
+    const pl=P.slice();p.inv=inv0.slice();p.eq=eq0;let cd=cd0;
+    for(let k=0;k<HZ;k++){
+      G.r=r0+k;shrink(p);
+      p.eu=!!(p.eq&&cd===0);p.cd=cd;
+      const m=margin(i);total+=m/(1+0.15*k);
+      const w=m>0;p.lost=!w;
+      if(p.eu)cd=C(p.eq).cd;else if(cd>0)cd--;
+      const gd=p.inv.some(id=>C(id).n==="Gesture of the Drowned");
+      p.inv=p.inv.filter(id=>gd||!OS.has(C(id).n));
+      if(k<HZ-1){
+        const a=pl.splice(Math.random()*pl.length|0,1)[0],b=pl.splice(Math.random()*pl.length|0,1)[0];
+        let best=null,bv=-Infinity;
+        [a,b].filter(x=>x!=null).forEach(id=>{p.inv.push(id);p.eu=!!(p.eq&&cd===0);p.cd=cd;const v=margin(i);p.inv.pop();if(best===null||v>bv){bv=v;best=id}});
+        if(best!=null)p.inv.push(best);
+      }
+    }
+  }
+  p.inv=keep.inv;p.eq=keep.eq;p.eu=keep.eu;p.cd=keep.cd;p.lost=keep.lost;G.r=keep.r;
+  return total/SAMPLES;
+}
+function mark(find){
+  document.querySelectorAll(".card.click").forEach(el=>{
+    if((el.getAttribute("onclick")||"").includes(find))el.classList.add("hintb");
+  });
+}
+function applyF(){
+  indicator();
+  if(!FUT||!G||ph!=="pick")return;
+  if(typeof ONL!=="undefined"&&ONL&&G.i!=me)return;
+  const i=G.i,p=G.P[i];
+  const h=G.hand[i]||[],e=G.eh[i]||[];
+  const key=[G.r,i,p.inv.join(),p.eq,p.cd,h.join(),e.join()].join("|");
+  if(!cache[key]){
+    const rest=pool();let res={};
+    if(slots(p)>lim(p)){
+      let b=null,bv=-Infinity;
+      p.inv.forEach(id=>{const v=project(i,p.inv.filter(x=>x!=id),p.eq,p.cd,rest);if(b===null||v>bv){bv=v;b=id}});
+      res={t:b};
+    }else{
+      let bi=null,be=null,bv=-Infinity;
+      const eqs=e.length?e:[null];
+      h.forEach(id=>{
+        const left=rest.filter(x=>x!==id&&!h.includes(x));
+        eqs.forEach(q=>{
+          const eq=q!=null?q:p.eq,cd=q!=null?0:p.cd;
+          const v=project(i,p.inv.concat([id]),eq,cd,left);
+          if(bi===null||v>bv){bv=v;bi=id;be=q}
+        });
+      });
+      res={i:bi,e:be};
+    }
+    cache[key]=res;
+  }
+  const r=cache[key];
+  if(r.t!=null)mark(`'trim',id:${r.t}}`);
+  if(r.i!=null)mark(`k:'i',id:${r.i}}`);
+  if(r.e!=null)mark(`k:'e',id:${r.e}}`);
+}
+const _render=render;
+render=function(){_render();try{applyF()}catch(err){}};
+})();
 </script></body></html>
